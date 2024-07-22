@@ -63,7 +63,8 @@ function initPlayers()
     local keyInput
     playerCount = 0
     local posx = 8
-    local sprites = {1, 5, 6, 7, 8, 9, 10, 11} -- Example sprite indices
+    -- local sprites = {1, 5, 6, 7, 8, 9, 10, 11} 
+    local sprites = {33, 34, 35, 36, 37, 38, 10, 11} -- Example sprite indices
 
     repeat
         cls()
