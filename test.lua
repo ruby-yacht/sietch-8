@@ -1,27 +1,44 @@
--- Constants
+-- player consts
 local GRAVITY = 0.5  -- Gravity value
 local BOUNCE_FACTOR = -10  -- Factor to bounce back after collision
 
+-- game variables
 local players = {}
 local playerCount = 0
+local gameStarted = false
 
-poke(0x5F2D, 0x1)
+-- start screen variables
+playerCount = 0
+local posx = 0
+local posy = 0
+local xOffset = 0
+local row = 1
+--
+
+poke(0x5F2D, 0x1) -- enable keyboard input
 
 
 function _init()
     cls(1)
     
-    initPlayers()
+    
     print("Hop To Survive");
 end
 
 function _update()
-    local keyInput = ""
-    updatePlayers()
 
-    if stat(30) then
-        keyInput = stat(31)
-        bouncePlayer(keyInput)
+    if gameStarted then
+        local keyInput = ""
+        updatePlayers()
+
+        if stat(30) then
+            keyInput = stat(31)
+            bouncePlayer(keyInput)
+        end
+    else
+        initPlayers()
+
+        keyInput = ""
     end
 end
 
@@ -64,23 +81,39 @@ function bouncePlayer(key)
 end
 
 function initPlayers()
-    local keyInput
-    playerCount = 0
-    local posx = 8
-    repeat
-        cls()
-        print("Player count: " .. playerCount);
+    print("Player count: " .. 11)
+    print("Player count: ", 20,20)
 
-        if stat(30) then
-            keyInput = stat(31)
+    if stat(30) then
+        local keyInput = stat(31)
 
-            if not (keyInput == "\31") then
-        
-                players[keyInput] = {x = posx, y = 64, width = 8, height = 8, vx = 0, vy = 0, onGround = false, key=keyInput}
+        if not (keyInput == "\31") then
+    
+            if not players[keyInput] then
+                players[keyInput] = {x = posx, y = posy, width = 8, height = 8, vx = 0, vy = 0, onGround = false, key=keyInput}
+
                 playerCount = playerCount + 1
                 posx = posx + 9
-            end
 
-        end     
-    until keyInput == "\32"
+                if (posx >= 120) then
+                    
+                    if xOffset >= 8 then
+                        xOffset = 0
+                    else
+                        xOffset = xOffset + 2
+                    end
+
+                    posx = xOffset
+
+                    posy = posy + 9
+                end
+            end
+        end
+
+        if keyInput == "\32" then
+            gameStarted = true
+        end
+
+    end     
+    
 end
