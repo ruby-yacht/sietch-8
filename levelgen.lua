@@ -1,8 +1,7 @@
 -- Constants
 local CHUNK_SIZE_X = 4  -- Width of each chunk in tiles
 local CHUNK_SIZE_Y = 14  -- Height of each chunk in tiles
-local CHUNKS_PER_ROW = 8 -- Number of chunks to load horizontally
-local CHUNKS_PER_COL = 8 -- Number of chunks to load vertically
+local CHUNKS_PER_ROW = 10 -- Number of chunks to load horizontally
 
 -- Example chunk definitions (2D arrays of sprite IDs)
 local chunks = {
@@ -53,16 +52,13 @@ end
 
 -- Function to generate map with random chunks
 function generateMap(num_chunks)
-    for y = 1, num_chunks do
-        map[y] = {}
-        for x = 1, num_chunks do
-            map[y][x] = getRandomChunk()
-        end
+    for x = 1, num_chunks do
+        map[x] = getRandomChunk()
     end
 end
 
 -- Generate initial map
-generateMap(CHUNKS_PER_ROW * CHUNKS_PER_COL)
+generateMap(CHUNKS_PER_ROW)
 
 -- Function to draw a chunk
 function drawChunk(chunk, start_x, start_y)
@@ -75,16 +71,17 @@ function drawChunk(chunk, start_x, start_y)
 end
 
 -- Function to load and draw chunks within view
-function loadChunksInView(camera_x, camera_y)
-    local start_chunk_x = flr(camera_x / CHUNK_SIZE_X)
-    local start_chunk_y = flr(camera_y / CHUNK_SIZE_Y)
+function loadChunksInView(camera_x)
+    local start_chunk_x = flr(camera_x / (CHUNK_SIZE_X * 8) + 1)
+    --local start_chunk_x = 0
+    --local start_chunk_x = 2
+    local start_chunk_y = 0
 
-    for y = start_chunk_y, start_chunk_y + CHUNKS_PER_COL do
-        for x = start_chunk_x, start_chunk_x + CHUNKS_PER_ROW do
-            if map[y] and map[y][x] then
-                local chunk = map[y][x]
-                drawChunk(chunk, x * CHUNK_SIZE_X * 8, y * CHUNK_SIZE_Y * 8)
-            end
+    for x = start_chunk_x, start_chunk_x + 1 do
+        if map[x] then
+            local chunk = map[x]
+            drawChunk(chunk, x * CHUNK_SIZE_X * 8, 0)
+            --drawChunk(chunk, (x * CHUNK_SIZE_X * 8) - CHUNK_SIZE_X * 8, 0)
         end
     end
 end
@@ -104,10 +101,6 @@ function _update()
     elseif btn(1) then  -- right arrow
         player_x = player_x + 1
     end
-    
-    -- Example camera following player (replace with actual camera logic)
-    camera_x = player_x - 64
-    camera_y = player_y - 64
 end
 
 function _draw()
@@ -116,7 +109,10 @@ function _draw()
     -- Draw background, HUD, etc.
 
     -- Load and draw chunks within view
-    loadChunksInView(camera_x, camera_y)
+    loadChunksInView(camera_x)
+
+    camera_x = camera_x + .5
+    camera(camera_x, camera_y)
     
     -- Draw player (replace with actual player drawing logic)
     spr(1, player_x, player_y)  -- Player sprite ID
