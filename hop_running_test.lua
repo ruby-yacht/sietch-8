@@ -4,9 +4,6 @@ local BOUNCE_FACTOR = -10  -- Factor to bounce back after collision
 -- game variables
 local players = {}
 local playerCount = 0
-local gameStarted = false
-local cameraX = 0
-local cameraY = 0
 
 -- start screen variables
 playerCount = 0
@@ -15,39 +12,7 @@ local posy = 0
 local xOffset = 0
 local row = 1
 --
-
 poke(0x5F2D, 0x1) -- enable keyboard input
-
-
-function _init()
-    -- empty
-end
-
-function _update()
-
-    if gameStarted then
-        local keyInput = ""
-        updatePlayers()
-
-        if stat(30) then
-            keyInput = stat(31)
-            bouncePlayer(keyInput)
-        end
-
-        cameraX = cameraX + .5
-        camera(cameraX, cameraY)
-    else -- character select screen
-        initPlayers()
-
-        keyInput = ""
-    end
-end
-
-function _draw()
-    cls()
-    map()
-    drawPlayers()
-end
 
 function drawPlayers()
     for key, player in pairs(players) do
@@ -63,10 +28,8 @@ function updatePlayers()
         player.x = player.x + player.vx
         player.y = player.y + player.vy
 
-
-
-        if player.y + player.height >= 112 then
-            player.y = 112 - player.height
+        if player.y + player.height >= 120 then
+            player.y = 120 - player.height
             player.vy = player.vy
             player.vx = 0
             player.onGround = true
@@ -113,9 +76,11 @@ function initPlayers()
 
         -- exit player selection and start the game
         if keyInput == "\32" then 
-            gameStarted = true
+            return true
         end
 
-    end     
+    end    
+    
+    return false
     
 end

@@ -84,25 +84,14 @@ function loadChunksIntoView(camera_x)
 
 end
 
-function _init()
-    -- Add chunks to the list
+function createChunks()
     chunkChain = addChunk(chunkChain, 0, 0, 0)
     chunkChain = addChunk(chunkChain, 1, 0, 128)
     chunkChain = addChunk(chunkChain, 2, 0, 256)
    
-
 end
 
-function _draw()
-    cls()
 
-    loadChunksIntoView(camera_x)
-
-    camera_x = camera_x + .5
-    camera(camera_x, camera_y)
-
-      
-end
 
 -- for testing
 function printList(list)
