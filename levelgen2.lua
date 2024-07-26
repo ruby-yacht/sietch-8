@@ -7,14 +7,22 @@ local player_y = 64
 -- Example camera position (replace with actual camera logic)
 local camera_x = 0
 local camera_y = 0
+local nextPositionToCreateNewChunk = 128
 
 local chunkChain = nil
 
-function getNextChunk()
+function getNextChunk(chunk)
     local chunkX = flr(rnd(8)) * 16
     local chunkY = 0
 
-    return {x = chunkX, y = chunkY}
+    return {
+        index_x = chunkX,
+        index_y = chunkY,
+        pos_x = chunk.pos_x + (128 * 2),
+        pos_y = chunk.pos_y + (128 * 2),
+        next = chunk.next
+    }
+
 
 end
 
@@ -71,8 +79,15 @@ function loadChunksIntoView(camera_x)
     -- n is camera_x.. n = floor(camera_x / 128)
 
     -- if n
-    local headChunk = chunkChain
 
+    if camera_x >= nextPositionToCreateNewChunk then
+        chunkChain = getNextChunk(chunkChain)
+        chunkChain = shiftHeadChunkToEnd(chunkChain)
+        nextPositionToCreateNewChunk = nextPositionToCreateNewChunk + 128
+        printh("swap")
+    end
+
+    local headChunk = chunkChain
 
     for i = 0, 2 do
         map(headChunk.index_x * 16, headChunk.index_y * 16, headChunk.pos_x, headChunk.pos_y, 16, 16)
