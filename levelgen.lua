@@ -1,3 +1,10 @@
+--[[
+OLD DO NOT USE
+
+
+
+]]
+
 -- Constants
 local CHUNK_SIZE_X = 4  -- Width of each chunk in tiles
 local CHUNK_SIZE_Y = 14  -- Height of each chunk in tiles
