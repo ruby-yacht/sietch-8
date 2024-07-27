@@ -23,7 +23,7 @@ function _draw()
 	rectfill(0,floor_y,127,127,12)
 	fillp() -- reset
 	
-	circfill(ballx,bally,size,13)
+	circfill(ballx,bally,size,12)
 	
 	spr(1,ballx-4-velx, 
 	      bally-4-vely)
