@@ -6,11 +6,11 @@ local players = {}
 local playerCount = 0
 local minBounceForce = -6
 local maxBounceForce = -10
+local maxPlayers = 32
 
 -- start screen variables
-playerCount = 0
 local posx = 0
-local posy = 0
+local posy = 8
 local xOffset = 0
 local row = 1
 --
@@ -20,28 +20,59 @@ function drawPlayers()
     for key, player in pairs(players) do
         spr(player.sprite, player.x, player.y)
     end
+
+end
+
+function checkForOutOfBounds(leftBounds)
+    local disabledCount = 0
+    
+    for key, player in pairs(players) do
+        if player.disabled == true then
+            disabledCount = disabledCount + 1        
+        elseif player.y > 128 then
+            player.disabled = true
+            player.x = -8
+            player.y = -8
+
+        elseif player.x < leftBounds then
+            player.disabled = true
+            player.x = -8
+            player.y = -8
+            --printh(player.key .. " is disabled")
+        end
+    end
+
+    if disabledCount >= playerCount then
+        return true
+    end
+
+    return false
+
 end
 
 -- apply "physics" to all players
 function updatePlayers() 
+    
     for key, player in pairs(players) do
-        player.vy = player.vy + GRAVITY
+        if player.disabled == false then
+            player.vy = player.vy + GRAVITY
 
-        player.x = player.x + player.vx
-        player.y = player.y + player.vy
+            player.x = player.x + player.vx
+            player.y = player.y + player.vy
 
-        if player.y + player.height >= 120 then
-            player.y = 120 - player.height
-            player.vy = player.vy
-            player.vx = 0
-            player.onGround = true
-            
-        else
-            player.onGround = false
-        end
+            if player.y + player.height >= 120 then
+                player.y = 120 - player.height
+                player.vy = player.vy
+                player.vx = 0
+                player.onGround = true
+                
+            else
+                player.onGround = false
+            end
 
-        if player.onGround then
-            player.bounce_force = max(player.bounce_force - .08, maxBounceForce)
+            if player.onGround then
+                player.bounce_force = max(player.bounce_force - .08, maxBounceForce)
+            end
         end
     end
 end
@@ -56,18 +87,26 @@ function bouncePlayer(key)
     end
 end
 
--- spawn players
+
+    
+    -- spawn players
 function initPlayers()
+    
     local sprites = {33, 34, 35, 36, 37, 38, 10, 11}
-
+    
     if stat(30) then 
-        local keyInput = stat(31) 
+        local keyInput = stat(31)
+        
+        local currentPlayerCount = 1
+        for _ in pairs(players) do
+            currentPlayerCount = currentPlayerCount + 1
+        end
 
-        if not (keyInput == "\32") and not players[keyInput] then 
-
+        if not (keyInput == "\32") and not players[keyInput] and currentPlayerCount <= 32 then 
             local sprite = sprites[playerCount % #sprites + 1]
             players[keyInput] = {x = posx, y = posy, width = 8, height = 8, vx = 0, 
-            vy = 0, onGround = false, bounce_force = minBounceForce, key=keyInput, sprite = sprite}
+            vy = 0, onGround = false, bounce_force = minBounceForce, key=keyInput, 
+            sprite = sprite, disabled = false}
             playerCount = playerCount + 1
 
             posx = posx + 9
@@ -88,10 +127,10 @@ function initPlayers()
         -- exit player selection and start the game
         if keyInput == "\32" then 
             return true
-        end
+        end  
 
-    end    
-    
+        
+    end
+
     return false
-    
 end
