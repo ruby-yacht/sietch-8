@@ -58,14 +58,19 @@ function _draw()
    drawPlayers(gameStarted)
    camera(camera_x, camera_y)
 
-    if gameOver then
-        print("     Game Over")
-    end
+
 
     if gameStarted == false then
-        print("Press any key to add a player")
+        rectfill(0, 0, 64, 8, 0)
+        print("Press any key to add a player", 0, 0, 7)
     else
-        print("Score " .. score, camera_x, 0)
+        rectfill(camera_x, 0, camera_x +  32, 8, 0)
+        print("Score " .. score, camera_x, 0, 7)
+    end
+
+    if gameOver then
+        rectfill(camera_x, 0, camera_x +  32, 8, 0)
+        print("game over", camera_x, 0, 7)
     end
 
     
