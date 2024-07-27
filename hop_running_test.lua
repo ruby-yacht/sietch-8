@@ -1,9 +1,11 @@
 local GRAVITY = 0.5  -- Gravity value
-local BOUNCE_FACTOR = -10  -- Factor to bounce back after collision
+local BOUNCE_FACTOR = -8  -- Factor to bounce back after collision
 
 -- game variables
 local players = {}
 local playerCount = 0
+local minBounceForce = -6
+local maxBounceForce = -10
 
 -- start screen variables
 playerCount = 0
@@ -33,8 +35,13 @@ function updatePlayers()
             player.vy = player.vy
             player.vx = 0
             player.onGround = true
+            
         else
             player.onGround = false
+        end
+
+        if player.onGround then
+            player.bounce_force = max(player.bounce_force - .08, maxBounceForce)
         end
     end
 end
@@ -43,8 +50,9 @@ end
 function bouncePlayer(key)
     local player = players[key]
     if not (player == nil) and player.onGround then
-        player.vy = BOUNCE_FACTOR
+        player.vy = player.bounce_force
         player.vx = 1
+        player.bounce_force = minBounceForce
     end
 end
 
@@ -56,7 +64,7 @@ function initPlayers()
         if not (keyInput == "\32") and not players[keyInput] then 
 
 
-            players[keyInput] = {x = posx, y = posy, width = 8, height = 8, vx = 0, vy = 0, onGround = false, key=keyInput}
+            players[keyInput] = {x = posx, y = posy, width = 8, height = 8, vx = 0, vy = 0, onGround = false, bounce_force = minBounceForce, key=keyInput}
             playerCount = playerCount + 1
 
             posx = posx + 9
