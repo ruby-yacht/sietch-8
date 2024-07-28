@@ -83,6 +83,7 @@ function updatePlayers()
         if is_solid(player.x, player.y + player.height, player.width, 1) then
             player.y = flr((player.y + player.height) / 8) * 8 - player.height
             player.vy = 0
+            player.vx = 0
             player.onGround = true
         else
             player.onGround = false
