@@ -13,7 +13,11 @@ local posx = 0
 local posy = 8
 local xOffset = 0
 local row = 1
---
+-- solid tiles in sprite-sheet
+solid_tiles = {2, 3, 4}
+-- lethal tiles in sprite-sheet
+lethal_tiles = {}
+
 poke(0x5F2D, 0x1) -- enable keyboard input
 
 function drawPlayers()
@@ -57,25 +61,68 @@ function updatePlayers()
         if player.disabled == false then
             player.vy = player.vy + GRAVITY
 
-            player.x = player.x + player.vx
-            player.y = player.y + player.vy
+            -- Calculate potential new positions
+            local new_x = player.x + player.vx
+            local new_y = player.y + player.vy
 
-            if player.y + player.height >= 120 then
-                player.y = 120 - player.height
-                player.vy = player.vy
+            -- Check collisions with solid tiles
+            if not is_solid(new_x, player.y, player.width, player.height) then
+                player.x = new_x
+            else
+                --printh("object hit, old x velocity: "..player.vx.."\n")
+                player.vx = player.vx
+                --printh("new x velocity: "..player.vx)
+            end
+
+            if not is_solid(player.x, new_y, player.width, player.height) then
+                player.y = new_y
+            else
+                player.vy = 0
+            end
+
+            -- Check if player is on the ground
+            if is_solid(player.x, player.y + player.height, player.width, 1) then
+                player.y = flr((player.y + player.height) / 8) * 8 - player.height
+                player.vy = 0
                 player.vx = 0
+                player.bounce_force = max(player.bounce_force - .08, maxBounceForce)
                 player.onGround = true
-                
             else
                 player.onGround = false
             end
 
-            if player.onGround then
-                player.bounce_force = max(player.bounce_force - .08, maxBounceForce)
-            end
         end
     end
 end
+
+function is_solid(x, y, width, height)
+    for dx = 0, width - 1 do
+        for dy = 0, height - 1 do
+            if is_solid_tile(x + dx, y + dy) then
+                return true
+            end
+        end
+    end
+    return false
+end
+
+function is_solid_tile(x, y)
+    -- Convert pixel coordinates to tile coordinates
+    local tile_x = flr(x / 8)
+    local tile_y = flr(y / 8)
+
+    -- Get the tile ID at the specified map position
+    local tile_id = mget(tile_x, tile_y)
+
+    -- Check if the tile ID is in the list of solid tiles
+    for solid_tile in all(solid_tiles) do
+        if tile_id == solid_tile then
+            return true
+        end
+    end
+    return false
+end
+
 
 -- look up key associated with player and bounce them
 function bouncePlayer(key)
