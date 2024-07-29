@@ -15,9 +15,9 @@ local posy = 8
 local xOffset = 0
 local row = 1
 -- solid tiles in sprite-sheet
-solid_tiles = {2, 3, 4}
+solid_tiles = {2, 3, 4, 26, 27, 28}
 -- lethal tiles in sprite-sheet
-lethal_tiles = {}
+lethal_tiles = {29}
 
 poke(0x5F2D, 0x1) -- enable keyboard input
 
