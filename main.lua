@@ -7,11 +7,21 @@ local delta_time = 0
 local score = 0
 local distanceScore = 10
 local distanceThresholdToScore = 32
+local timeUntilRestart = 2
 
 poke(0x5F2D, 0x1) -- enable keyboard input
 
 function _init()
-    -- Add chunks to the list
+    gameStarted = false
+    gameOver = false
+    camera_x = 0
+    timeUntilCameraMoves = 1.5
+    last_time = 0
+    delta_time = 0
+    score = 0
+    distanceScore = 10
+    distanceThresholdToScore = 32
+    timeUntilRestart = 2
     createChunks()
     last_time = time()
 end
@@ -44,7 +54,12 @@ function _update()
         end
        
     elseif gameOver then
-       
+        if timeUntilRestart > 0 then
+            timeUntilRestart -= delta_time
+        else
+            timeUntilRestart = 2
+            _init()
+        end
         --nothing
     else -- character select screen
         gameStarted = initPlayers()

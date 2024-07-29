@@ -7,6 +7,7 @@ local playerCount = 0
 local minBounceForce = -6
 local maxBounceForce = -10
 local maxPlayers = 32
+local maxFallVelocity = 10
 
 -- start screen variables
 local posx = 0
@@ -42,7 +43,6 @@ function checkForOutOfBounds(leftBounds)
             player.disabled = true
             player.x = -8
             player.y = -8
-            --printh(player.key .. " is disabled")
         end
     end
 
@@ -59,7 +59,6 @@ function updatePlayers()
     
     for key, player in pairs(players) do
         if player.disabled == false then
-            player.vy = player.vy + GRAVITY
 
             -- Calculate potential new positions
             local new_x = player.x + player.vx
@@ -69,40 +68,66 @@ function updatePlayers()
             if not is_solid(new_x, player.y, player.width, player.height) then
                 player.x = new_x
             else
-                --printh("object hit, old x velocity: "..player.vx.."\n")
                 player.vx = player.vx
-                --printh("new x velocity: "..player.vx)
             end
 
-            if not is_solid(player.x, new_y, player.width, player.height) then
+            -- @shahbaz collision checking range needs to be consistent, otherwise, jitter can occur
+            if not is_solid(player.x, new_y, player.width, 1) then
                 player.y = new_y
             else
                 player.vy = 0
             end
-
+            
             -- Check if player is on the ground
             if is_solid(player.x, player.y + player.height, player.width, 1) then
                 player.y = flr((player.y + player.height) / 8) * 8 - player.height
-                player.vy = 0
-                player.vx = 0
+
                 player.bounce_force = max(player.bounce_force - .08, maxBounceForce)
+                player.vx = 0
                 player.onGround = true
             else
                 player.onGround = false
+
+                player.vy = player.vy + GRAVITY
+                player.vy = min(player.vy, maxFallVelocity)
             end
 
+            
         end
     end
 end
 
+-- @shahbaz isn't this faster than testing every pixel in the rect?
 function is_solid(x, y, width, height)
+    -- Check top edge
     for dx = 0, width - 1 do
-        for dy = 0, height - 1 do
-            if is_solid_tile(x + dx, y + dy) then
-                return true
-            end
+        if is_solid_tile(x + dx, y) then
+            return true
         end
     end
+
+    -- Check bottom edge
+    for dx = 0, width - 1 do
+        if is_solid_tile(x + dx, y + height - 1) then
+            return true
+        end
+    end
+
+    -- Check left edge
+    for dy = 0, height - 1 do
+        if is_solid_tile(x, y + dy) then
+            return true
+        end
+    end
+
+    -- Check right edge
+    for dy = 0, height - 1 do
+        if is_solid_tile(x + width - 1, y + dy) then
+            return true
+        end
+    end
+
+    -- No collision detected on the edges
     return false
 end
 
@@ -122,7 +147,6 @@ function is_solid_tile(x, y)
     end
     return false
 end
-
 
 -- look up key associated with player and bounce them
 function bouncePlayer(key)
