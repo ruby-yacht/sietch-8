@@ -35,7 +35,11 @@ function _update()
     if gameStarted and gameOver == false then
         local keyInput = ""
         --testh()
-        updatePlayers()
+        if(debug) then
+            DEBUG_updatePlayers()
+        else
+            updatePlayers()
+        end
         gameOver = checkForOutOfBounds(camera_x-16)
 
         if stat(30) then
@@ -71,6 +75,7 @@ function _draw()
     cls()
 
    loadChunksIntoView(camera_x)
+   --map()
    drawPlayers(gameStarted)
    camera(camera_x, camera_y)
 
