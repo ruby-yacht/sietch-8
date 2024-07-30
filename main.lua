@@ -8,6 +8,7 @@ local score = 0
 local distanceScore = 10
 local distanceThresholdToScore = 32
 local timeUntilRestart = 2
+local debug = false
 
 poke(0x5F2D, 0x1) -- enable keyboard input
 
@@ -88,6 +89,10 @@ function _draw()
         print("game over", camera_x, 0, 7)
     end
 
-    
+    if (debug) then
+        print("CPU usage: " .. stat(1) .. "%", camera_x,8)
+        print("Memery usage: " .. stat(0) .. " bytes", camera_x,16)
+        print("Frame rate: " .. stat(7), camera_x,24)
+    end  
       
 end
