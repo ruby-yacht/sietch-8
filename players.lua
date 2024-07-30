@@ -54,6 +54,51 @@ function checkForOutOfBounds(leftBounds)
 
 end
 
+function DEBUG_updatePlayers()
+    for key, player in pairs(players) do
+        if player.disabled == false then
+            
+            local new_x = player.x
+            local new_y = player.y
+
+            local player_speed = 1
+            if (btn(0)) then
+                new_x -= player_speed
+            end
+            
+            -- Check if the right arrow key is pressed
+            if (btn(1)) then
+                new_x += player_speed
+            end
+            
+            -- Check if the up arrow key is pressed
+            if (btn(2)) then
+                new_y -= player_speed
+            end
+            
+            -- Check if the down arrow key is pressed
+            if (btn(3)) then
+                new_y += player_speed
+            end
+
+            if not is_solid(new_x, player.y, player.width, player.height) then
+                player.x = new_x
+            else
+                player.vx = player.vx
+            end
+
+            -- @shahbaz collision checking range needs to be consistent, otherwise, jitter can occur
+            if not is_solid(player.x, new_y, player.width, 1) then
+                player.y = new_y
+            else
+                player.vy = 0
+            end
+
+            
+        end
+    end
+end
+
 -- apply "physics" to all players
 function updatePlayers() 
     
