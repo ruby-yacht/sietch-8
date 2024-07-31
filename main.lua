@@ -10,6 +10,8 @@ local distanceThresholdToScore = 32
 local timeUntilRestart = 2
 local debug = false
 
+local xx = 0
+
 poke(0x5F2D, 0x1) -- enable keyboard input
 
 function _init()
@@ -23,7 +25,7 @@ function _init()
     distanceScore = 10
     distanceThresholdToScore = 32
     timeUntilRestart = 2
-    createChunks()
+    --createChunks()
     last_time = time()
 end
 
@@ -74,10 +76,11 @@ end
 function _draw()
     cls()
 
-   loadChunksIntoView(camera_x)
-   --map()
-   drawPlayers(gameStarted)
-   camera(camera_x, camera_y)
+    --map(0, 0, xx, 0, 16, 16)
+    --loadChunksIntoView(camera_x)
+    --map()
+    drawPlayers(gameStarted)
+    camera(camera_x, camera_y)
 
 
 
