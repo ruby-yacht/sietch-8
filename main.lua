@@ -10,8 +10,6 @@ local distanceThresholdToScore = 32
 local timeUntilRestart = 2
 local debug = false
 
-local xx = 0
-
 poke(0x5F2D, 0x1) -- enable keyboard input
 
 function _init()
@@ -52,12 +50,17 @@ function _update()
         if timeUntilCameraMoves > 0 then
             timeUntilCameraMoves -= delta_time
         else
-            camera_x = camera_x + .5
+            if camera_x >= 896 then
+                camera_x = 896
+            else
+                camera_x = camera_x + .5
+            end            
 
             if camera_x >= distanceThresholdToScore then
                 score = score + distanceScore
                 distanceThresholdToScore = distanceThresholdToScore + 32
             end
+
         end
        
     elseif gameOver then
@@ -76,9 +79,8 @@ end
 function _draw()
     cls()
 
-    --map(0, 0, xx, 0, 16, 16)
-    --loadChunksIntoView(camera_x)
-    --map()
+    --loadChunksIntoView(camera_x) :(
+    map(0, 0, 0, 0, 128, 16)
     drawPlayers(gameStarted)
     camera(camera_x, camera_y)
 
