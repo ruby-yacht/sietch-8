@@ -1,3 +1,11 @@
+--[[
+CURRENT LEVEL GEN METHOD
+
+Chunks are stored in a linked list data structure. ChunkChain references to the head of the linked list.
+The list has a length of 3.
+
+]]
+
 local camera_x = 0
 local camera_y = 0
 local nextPositionToCreateNewChunk = 128 -- used to check when the next chunk needs to be loaded
@@ -57,7 +65,6 @@ function shiftHeadChunkToEnd(head)
     return newHead
 end
 
-
 -- Load the chunk data into the active map area using mset
 function loadChunkData(chunk)
     local sx = chunk.index_x * 16
@@ -75,7 +82,7 @@ end
 
 function loadChunksIntoView(camera_x)
     if camera_x >= nextPositionToCreateNewChunk then -- a chunk left the screen, load the next one
-        --chunkChain = getNextChunk(chunkChain) -- load the new chunk
+        chunkChain = getNextChunk(chunkChain) -- load the new chunk
         chunkChain.pos_x = chunkChain.pos_x + (128 * 3) -- move chunk
         chunkChain = shiftHeadChunkToEnd(chunkChain) -- shift first chunk to the end of the list
         nextPositionToCreateNewChunk = nextPositionToCreateNewChunk + 128
@@ -87,8 +94,7 @@ function loadChunksIntoView(camera_x)
 
     for i = 0, 2 do -- iterate through the chunk list, rendering each one
         loadChunkData(headChunk)
-        map(headChunk.pos_x, 0, 16, 16)
-        --map(headChunk.index_x * 16, headChunk.index_y * 16, headChunk.pos_x, 0, 16, 16)
+        map(headChunk.index_x * 16, headChunk.index_y * 16, headChunk.pos_x, 0, 16, 16)
         headChunk = headChunk.next
     end
 
@@ -101,6 +107,13 @@ function createChunks()
    
 end
 
+function resetChunks()
+    local camera_x = 0
+    local camera_y = 0
+    local nextPositionToCreateNewChunk = 128 -- used to check when the next chunk needs to be loaded
+    local chunkChain = nil
+    createChunks()
+end
 
 
 -- for testing

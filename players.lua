@@ -15,7 +15,7 @@ local posy = 8
 local xOffset = 0
 local row = 1
 -- solid tiles in sprite-sheet
-solid_tiles = {2, 3, 4, 26, 27, 28}
+solid_tiles = {2, 3, 4, 27, 28, 29, 31}
 -- lethal tiles in sprite-sheet
 lethal_tiles = {29}
 
@@ -130,6 +130,7 @@ function updatePlayers()
                 player.bounce_force = max(player.bounce_force - .08, maxBounceForce)
                 player.vx = 0
                 player.onGround = true
+                printh("player at\nx: "..player.x..", y: "..player.y)
             else
                 player.onGround = false
 
@@ -203,7 +204,16 @@ function bouncePlayer(key)
     end
 end
 
+function resetPlayers()
+    players = {}
+    playerCount = 0
+    minBounceForce = -6
+    maxBounceForce = -10
+    maxPlayers = 32
+    maxFallVelocity = 10
 
+
+end
     
     -- spawn players
 function initPlayers()

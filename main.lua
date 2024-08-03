@@ -23,7 +23,7 @@ function _init()
     distanceScore = 10
     distanceThresholdToScore = 32
     timeUntilRestart = 2
-    createChunks()
+    --createChunks()
     last_time = time()
 end
 
@@ -62,8 +62,14 @@ function _update()
         if timeUntilRestart > 0 then
             timeUntilRestart -= delta_time
         else
+            printh("pre-restart vals: \n")
+            print_global_vals()
             timeUntilRestart = 2
-            _init()
+            printh("RESTARTING...")
+            restart()
+            printh("post-restart vals: \n")
+            print_global_vals()
+            --_init()
         end
         --nothing
     else -- character select screen
@@ -74,8 +80,8 @@ end
 function _draw()
     cls()
 
-   loadChunksIntoView(camera_x)
-   --map()
+   --loadChunksIntoView(camera_x)
+   map()
    drawPlayers(gameStarted)
    camera(camera_x, camera_y)
 
@@ -100,4 +106,37 @@ function _draw()
         print("Frame rate: " .. stat(7), camera_x,24)
     end  
       
+end
+
+function restart()
+    --cls()
+    gameStarted = false
+    gameOver = false
+    camera_x = 0
+    camera_y = 0
+    timeUntilCameraMoves = 1.5
+    delta_time = 0
+    score = 0
+    distanceScore = 10
+    distanceThresholdToScore = 32
+    cls()
+    --resetChunks()
+    --poke(0x5F2D, 0x1)
+    --initPlayers()
+    resetPlayers()
+    last_time = time()
+
+end
+
+function print_global_vals()
+    printh ("gameStarted: "..tostr(gameStarted).."\n")
+    printh ("gameOver: "..tostr(gameOver).."\n")
+    printh ("camera_x: "..tostr(camera_x).."\n")
+    printh ("timeUntilCameraMoves: "..tostr(timeUntilCameraMoves).."\n")
+    printh ("last_time: "..tostr(last_time).."\n")
+    printh ("delta_time: "..tostr(delta_time).."\n")
+    printh ("score: "..tostr(score).."\n")
+    printh ("distanceScore: "..tostr(distanceScore).."\n")
+    printh ("distanceThresholdToScore: "..tostr(distanceThresholdToScore).."\n")
+    printh ("distanceScore: "..tostr(distanceScore).."\n") 
 end
