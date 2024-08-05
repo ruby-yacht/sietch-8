@@ -8,6 +8,9 @@ local minBounceForce = -6
 local maxBounceForce = -10
 local maxPlayers = 32
 local maxFallVelocity = 10
+local disabledCount = 0
+local respawnQueue = Queue.new()
+local activeBirdList = {}
 
 -- start screen variables
 local posx = 0
@@ -30,21 +33,23 @@ function drawPlayers()
 
 end
 
-function checkForOutOfBounds(leftBounds)
-    local disabledCount = 0
-    
-    for key, player in pairs(players) do
-        if player.disabled == true then
-            disabledCount = disabledCount + 1        
-        elseif player.y > 128 then
-            player.disabled = true
-            player.x = -8
-            player.y = -8
+function disablePlayer(player)
+    player.disabled = true
+    player.x = -8
+    player.y = -8
+    disabledCount = disabledCount + 1    
+    respawnQueue:enqueue(player)
 
+    addRespawnBird()
+
+end
+
+function checkForOutOfBounds(leftBounds)    
+    for key, player in pairs(players) do
+        if player.y > 128 then
+            disablePlayer(player)
         elseif player.x < leftBounds then
-            player.disabled = true
-            player.x = -8
-            player.y = -8
+            disablePlayer(player)
         end
     end
 
@@ -94,7 +99,8 @@ function updatePlayers()
                 player.bounce_force = max(player.bounce_force - .08, maxBounceForce)
                 player.vx = 0
                 player.onGround = true
-                printh("player at\nx: "..player.x..", y: "..player.y)
+                -- add debug check
+                --printh("player at\nx: "..player.x..", y: "..player.y)
 
                 if has_flag(flags, 7) then
                     printh("victory!")
@@ -270,5 +276,33 @@ function DEBUG_updatePlayers()
 
             
         end
+    end
+end
+
+function addRespawnBird()
+    local player = respawnQueue:dequeue()
+    
+    local initXPos = camera_x+128
+    local initYPos = 16
+    player.x = initXPos
+    player.y = initYPos + 8
+    add(activeBirdList, {bird = {x = initXPos, y = initYPos, sprite = 1}, playerKey = player.key})
+
+end
+
+function updateRespawns()
+
+    for _, respawn in ipairs(activeBirdList) do
+        local newPos = respawn.bird.x - 1      
+        respawn.bird.x = newPos
+        local p = players[respawn.playerKey];
+        p.x = newPos
+    end
+
+end
+
+function drawRespawnBirds()
+    for _, respawn in ipairs(activeBirdList) do
+        spr(respawn.bird.sprite, respawn.bird.x, respawn.bird.y)
     end
 end

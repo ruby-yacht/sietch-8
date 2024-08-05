@@ -1,9 +1,9 @@
-local gameStarted = false
-local gameOver = false
-local camera_x = 0
+gameStarted = false
+gameOver = false
+camera_x = 0
 local timeUntilCameraMoves = 1.5
-local last_time = 0
-local delta_time = 0
+last_time = 0
+delta_time = 0
 local score = 0
 local distanceScore = 10
 local distanceThresholdToScore = 32
@@ -40,6 +40,9 @@ function _update()
         else
             updatePlayers()
         end
+        updateRespawns()
+
+        -- gameover only checks for out of bound deaths. Add support for death in bounds
         gameOver = checkForOutOfBounds(camera_x-16)
 
         if stat(30) then
@@ -67,14 +70,19 @@ function _update()
         if timeUntilRestart > 0 then
             timeUntilRestart -= delta_time
         else
-            printh("pre-restart vals: \n")
-            print_global_vals()
             timeUntilRestart = 2
-            printh("RESTARTING...")
             restart()
-            printh("post-restart vals: \n")
-            print_global_vals()
-            --_init()
+
+            -- shahbaz you can clean this up. 
+            if (debug) then
+                printh("pre-restart vals: \n")
+                print_global_vals()
+                
+                printh("RESTARTING...")
+                
+                printh("post-restart vals: \n")
+                print_global_vals()
+            end
         end
         --nothing
     else -- character select screen
@@ -88,6 +96,7 @@ function _draw()
     --loadChunksIntoView(camera_x) :(
     map(0, 0, 0, 0, 128, 16)
     drawPlayers(gameStarted)
+    drawRespawnBirds()
     camera(camera_x, camera_y)
 
 
