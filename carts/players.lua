@@ -15,11 +15,9 @@ local posy = 8
 local xOffset = 0
 local row = 1
 -- solid tiles in sprite-sheet
-solid_tiles = {2, 3, 4, 27, 28, 29, 31, 11}
-
+solid_tiles = {2, 3, 4, 18, 19, 20, 26, 27, 28}
 -- lethal tiles in sprite-sheet
 lethal_tiles = {29}
-victory_tile = 11
 
 poke(0x5F2D, 0x1) -- enable keyboard input
 
@@ -67,88 +65,76 @@ function updatePlayers()
             local new_y = player.y + player.vy
 
             -- Check collisions with solid tiles
-
-            local flags = get_tile_flags(new_x, player.y, player.width, player.height)
-            if not has_flag(flags, 8) then
+            if not is_solid(new_x, player.y, player.width, player.height) then
                 player.x = new_x
             else
                 player.vx = player.vx
             end
-            
-            -- prevent players from falling off the edge of the map
-            player.x = min(1024-8, player.x)
 
             -- @shahbaz collision checking range needs to be consistent, otherwise, jitter can occur
-            flags = get_tile_flags(player.x, new_y, player.width, 1)
-            if not has_flag(flags, 8) then
+            if not is_solid(player.x, new_y, player.width, 1) then
                 player.y = new_y
             else
                 player.vy = 0
             end
             
             -- Check if player is on the ground
-            flags = get_tile_flags(player.x, player.y + player.height, player.width, 1)
-            if has_flag(flags, 8) then
+            if is_solid(player.x, player.y + player.height, player.width, 1) then
                 player.y = flr((player.y + player.height) / 8) * 8 - player.height
 
                 player.bounce_force = max(player.bounce_force - .08, maxBounceForce)
                 player.vx = 0
                 player.onGround = true
-                printh("player at\nx: "..player.x..", y: "..player.y)
-
-                if has_flag(flags, 7) then
-                    printh("victory!")
-                end
             else
                 player.onGround = false
 
                 player.vy = player.vy + GRAVITY
                 player.vy = min(player.vy, maxFallVelocity)
             end
-            
 
             
         end
     end
 end
 
-function has_flag(flags, flag)
-    for _, f in ipairs(flags) do 
-        if f == flag then
+-- @shahbaz isn't this faster than testing every pixel in the rect?
+function is_solid(x, y, width, height)
+    -- Check top edge
+    for dx = 0, width - 1 do
+        if is_solid_tile(x + dx, y) then
             return true
         end
     end
+
+    -- Check bottom edge
+    for dx = 0, width - 1 do
+        if is_solid_tile(x + dx, y + height - 1) then
+            return true
+        end
+    end
+
+    -- Check left edge
+    for dy = 0, height - 1 do
+        if is_solid_tile(x, y + dy) then
+            return true
+        end
+    end
+
+    -- Check right edge
+    for dy = 0, height - 1 do
+        if is_solid_tile(x + width - 1, y + dy) then
+            return true
+        end
+    end
+
+    -- No collision detected on the edges
     return false
 end
 
-function get_tile_flags(x, y, width, height)
-    local flags = {}
-    for dx = 0, width - 1 do
-        for dy = 0, height - 1 do
-
-            --Convert pixel coordinates to tile coordinates
-            local tile_x = flr((x + dx) / 8)
-            local tile_y = flr((y + dy) / 8)
-
-            if is_solid_tile(tile_x,tile_y) then
-                add_unique(flags, 8) -- 8 flag is collision
-            end
-
-            for flag = 0, 7 do
-                local flagFound = fget(mget(tile_x, tile_y), flag)
-                if flagFound then
-                    add_unique(flags, flag)
-                end
-            end
-            
-        end
-    end
-    return flags
-end
-
-
-
-function is_solid_tile(tile_x, tile_y)
+function is_solid_tile(x, y)
+    -- Convert pixel coordinates to tile coordinates
+    local tile_x = flr(x / 8)
+    local tile_y = flr(y / 8)
 
     -- Get the tile ID at the specified map position
     local tile_id = mget(tile_x, tile_y)
@@ -172,20 +158,11 @@ function bouncePlayer(key)
     end
 end
 
-function resetPlayers()
-    players = {}
-    playerCount = 0
-    minBounceForce = -6
-    maxBounceForce = -10
-    maxPlayers = 32
-    maxFallVelocity = 10
 
-
-end
     
     -- spawn players
 function initPlayers()
-    local sprites = {33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64}
+    local sprites = {32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64}
 
     if stat(30) then 
         local keyInput = stat(31)
@@ -226,49 +203,4 @@ function initPlayers()
     end
 
     return false
-end
-
-function DEBUG_updatePlayers()
-    for key, player in pairs(players) do
-        if player.disabled == false then
-            
-            local new_x = player.x
-            local new_y = player.y
-
-            local player_speed = 1
-            if (btn(0)) then
-                new_x -= player_speed
-            end
-            
-            -- Check if the right arrow key is pressed
-            if (btn(1)) then
-                new_x += player_speed
-            end
-            
-            -- Check if the up arrow key is pressed
-            if (btn(2)) then
-                new_y -= player_speed
-            end
-            
-            -- Check if the down arrow key is pressed
-            if (btn(3)) then
-                new_y += player_speed
-            end
-
-            if not get_tile_flags(new_x, player.y, player.width, player.height) then
-                player.x = new_x
-            else
-                player.vx = player.vx
-            end
-
-            -- @shahbaz collision checking range needs to be consistent, otherwise, jitter can occur
-            if not get_tile_flags(player.x, new_y, player.width, 1) then
-                player.y = new_y
-            else
-                player.vy = 0
-            end
-
-            
-        end
-    end
 end

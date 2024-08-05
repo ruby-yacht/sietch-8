@@ -8,7 +8,6 @@ local score = 0
 local distanceScore = 10
 local distanceThresholdToScore = 32
 local timeUntilRestart = 2
-local debug = false
 
 poke(0x5F2D, 0x1) -- enable keyboard input
 
@@ -23,7 +22,7 @@ function _init()
     distanceScore = 10
     distanceThresholdToScore = 32
     timeUntilRestart = 2
-    --createChunks()
+    createChunks()
     last_time = time()
 end
 
@@ -35,11 +34,7 @@ function _update()
     if gameStarted and gameOver == false then
         local keyInput = ""
         --testh()
-        if(debug) then
-            DEBUG_updatePlayers()
-        else
-            updatePlayers()
-        end
+        updatePlayers()
         gameOver = checkForOutOfBounds(camera_x-16)
 
         if stat(30) then
@@ -50,31 +45,20 @@ function _update()
         if timeUntilCameraMoves > 0 then
             timeUntilCameraMoves -= delta_time
         else
-            if camera_x >= 896 then
-                camera_x = 896
-            else
-                camera_x = camera_x + .5
-            end            
+            camera_x = camera_x + .5
 
             if camera_x >= distanceThresholdToScore then
                 score = score + distanceScore
                 distanceThresholdToScore = distanceThresholdToScore + 32
             end
-
         end
        
     elseif gameOver then
         if timeUntilRestart > 0 then
             timeUntilRestart -= delta_time
         else
-            printh("pre-restart vals: \n")
-            print_global_vals()
             timeUntilRestart = 2
-            printh("RESTARTING...")
-            restart()
-            printh("post-restart vals: \n")
-            print_global_vals()
-            --_init()
+            _init()
         end
         --nothing
     else -- character select screen
@@ -85,10 +69,9 @@ end
 function _draw()
     cls()
 
-    --loadChunksIntoView(camera_x) :(
-    map(0, 0, 0, 0, 128, 16)
-    drawPlayers(gameStarted)
-    camera(camera_x, camera_y)
+   loadChunksIntoView(camera_x)
+   drawPlayers(gameStarted)
+   camera(camera_x, camera_y)
 
 
 
@@ -105,43 +88,6 @@ function _draw()
         print("game over", camera_x, 0, 7)
     end
 
-    if (debug) then
-        print("CPU usage: " .. stat(1) .. "%", camera_x,8)
-        print("Memery usage: " .. stat(0) .. " bytes", camera_x,16)
-        print("Frame rate: " .. stat(7), camera_x,24)
-    end  
+    
       
-end
-
-function restart()
-    --cls()
-    gameStarted = false
-    gameOver = false
-    camera_x = 0
-    camera_y = 0
-    timeUntilCameraMoves = 1.5
-    delta_time = 0
-    score = 0
-    distanceScore = 10
-    distanceThresholdToScore = 32
-    cls()
-    --resetChunks()
-    --poke(0x5F2D, 0x1)
-    --initPlayers()
-    resetPlayers()
-    last_time = time()
-
-end
-
-function print_global_vals()
-    printh ("gameStarted: "..tostr(gameStarted).."\n")
-    printh ("gameOver: "..tostr(gameOver).."\n")
-    printh ("camera_x: "..tostr(camera_x).."\n")
-    printh ("timeUntilCameraMoves: "..tostr(timeUntilCameraMoves).."\n")
-    printh ("last_time: "..tostr(last_time).."\n")
-    printh ("delta_time: "..tostr(delta_time).."\n")
-    printh ("score: "..tostr(score).."\n")
-    printh ("distanceScore: "..tostr(distanceScore).."\n")
-    printh ("distanceThresholdToScore: "..tostr(distanceThresholdToScore).."\n")
-    printh ("distanceScore: "..tostr(distanceScore).."\n") 
 end
