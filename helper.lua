@@ -39,6 +39,14 @@ function Queue:enqueue(item)
     self.tail = self.tail + 1
 end
 
+function Queue:enqueue_unique(item)
+    if not contains(self.items, item) then
+        self.items[self.tail] = item
+        self.tail = self.tail + 1
+    end
+
+end
+
 -- Remove and return the item from the front of the queue
 function Queue:dequeue()
     if self:isempty() then
@@ -66,4 +74,20 @@ end
 -- Get the number of items in the queue
 function Queue:size()
     return self.tail - self.head
+end
+
+------- TIMER
+
+function timer(interval)
+    local last_time = t()  -- Track the last time the function was called
+    
+    return function()
+        local current_time = t()
+        -- Check if the interval has passed
+        if current_time - last_time >= interval then
+            last_time = current_time  -- Update the last time to current time
+            return true  -- Indicate that the interval has elapsed
+        end
+        return false  -- Indicate that the interval has not elapsed
+    end
 end

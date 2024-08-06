@@ -40,10 +40,10 @@ function _update()
         else
             updatePlayers()
         end
-        updateRespawns()
-
-        -- gameover only checks for out of bound deaths. Add support for death in bounds
-        gameOver = checkForOutOfBounds(camera_x-16)
+        update_respawns()
+        checkForOutOfBounds(camera_x-16)
+        printh(get_disabled_count())
+        gameOver = (get_disabled_count() == get_player_count())
 
         if stat(30) then
             keyInput = stat(31)

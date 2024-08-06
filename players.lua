@@ -8,9 +8,10 @@ local minBounceForce = -6
 local maxBounceForce = -10
 local maxPlayers = 32
 local maxFallVelocity = 10
-local disabledCount = 0
 local respawnQueue = Queue.new()
 local activeBirdList = {}
+local respawnTimer = timer(2)
+local disabledPlayerCount = 0
 
 -- start screen variables
 local posx = 0
@@ -37,28 +38,20 @@ function disablePlayer(player)
     player.disabled = true
     player.x = -8
     player.y = -8
-    disabledCount = disabledCount + 1    
-    respawnQueue:enqueue(player)
-
-    addRespawnBird()
-
+    disabledPlayerCount = disabledPlayerCount + 1
+    respawnQueue:enqueue_unique({bird = {x = -8, y = -8, sprite = 1}, playerKey = player.key})
 end
 
 function checkForOutOfBounds(leftBounds)    
     for key, player in pairs(players) do
-        if player.y > 128 then
-            disablePlayer(player)
-        elseif player.x < leftBounds then
-            disablePlayer(player)
+        if not(player.disabled) then 
+            if player.y > 128 then
+                disablePlayer(player)
+            elseif player.x < leftBounds then
+                disablePlayer(player)
+            end
         end
     end
-
-    if disabledCount >= playerCount then
-        return true
-    end
-
-    return false
-
 end
 
 -- apply "physics" to all players
@@ -83,7 +76,6 @@ function updatePlayers()
             -- prevent players from falling off the edge of the map
             player.x = min(1024-8, player.x)
 
-            -- @shahbaz collision checking range needs to be consistent, otherwise, jitter can occur
             flags = get_tile_flags(player.x, new_y, player.width, 1)
             if not has_flag(flags, 8) then
                 player.y = new_y
@@ -151,8 +143,6 @@ function get_tile_flags(x, y, width, height)
     end
     return flags
 end
-
-
 
 function is_solid_tile(tile_x, tile_y)
 
@@ -280,24 +270,44 @@ function DEBUG_updatePlayers()
 end
 
 function addRespawnBird()
-    local player = respawnQueue:dequeue()
-    
+    local respawn = respawnQueue:dequeue()
+    local player = players[respawn.playerKey]
+    local bird = respawn.bird
     local initXPos = camera_x+128
     local initYPos = 16
+    bird.x = initXPos
+    bird.y = initYPos
     player.x = initXPos
     player.y = initYPos + 8
-    add(activeBirdList, {bird = {x = initXPos, y = initYPos, sprite = 1}, playerKey = player.key})
+
+    add(activeBirdList, respawn)
 
 end
 
-function updateRespawns()
+function update_respawns()
 
+    if respawnTimer() and not(respawnQueue:isempty()) then
+        addRespawnBird()
+    end
+
+    local returnToQueue = nil -- move all birds across the screen
     for _, respawn in ipairs(activeBirdList) do
         local newPos = respawn.bird.x - 1      
         respawn.bird.x = newPos
         local p = players[respawn.playerKey];
         p.x = newPos
+
+        if newPos < camera_x - 8 then
+           returnToQueue = respawn
+        end
     end
+
+    if not(returnToQueue == nil) then -- remove first bird to go out of bounds
+        respawnQueue:enqueue_unique(returnToQueue)
+        del(activeBirdList, returnToQueue)
+    end
+
+
 
 end
 
@@ -305,4 +315,12 @@ function drawRespawnBirds()
     for _, respawn in ipairs(activeBirdList) do
         spr(respawn.bird.sprite, respawn.bird.x, respawn.bird.y)
     end
+end
+
+function get_player_count()
+    return playerCount
+end
+
+function get_disabled_count()
+    return disabledPlayerCount
 end
