@@ -27,33 +27,61 @@ victory_tile = 11
 
 poke(0x5F2D, 0x1) -- enable keyboard input
 
-local bird = {bird = {x = 50, y = 50, width = 8, height = 16, cx = 0, cy = 4, sprite = 1}, playerKey = 3}
-
-function drawPlayers()
-    for key, player in pairs(players) do
-        spr(player.sprite, player.x, player.y)
-    end
-
-end
-
 function disablePlayer(player)
     player.disabled = true
     player.x = -8
     player.y = -8
     disabledPlayerCount = disabledPlayerCount + 1
-    respawnQueue:enqueue_unique({bird = {x = -8, y = -8, width = 8, height = 16, cx = 0, cy = 4, sprite = 1}, playerKey = player.key})
+    respawnQueue:enqueue_unique({bird = {x = -8, y = -8, width = 8, height = 16, boundsOffsetX = 0, boundsOffsetY = 4, sprite = 1}, playerKey = player.key})
 end
 
-function checkForOutOfBounds(leftBounds)    
-    for key, player in pairs(players) do
-        if not(player.disabled) then 
-            if player.y > 128 then
-                disablePlayer(player)
-            elseif player.x < leftBounds then
-                disablePlayer(player)
+function enablePlayer(player)
+    player.disabled = false
+    disabledPlayerCount = disabledPlayerCount - 1
+end
+
+function initPlayers()
+    local sprites = {33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64}
+
+    if stat(30) then 
+        local keyInput = stat(31)
+        
+        local currentPlayerCount = 1
+        for _ in pairs(players) do
+            currentPlayerCount = currentPlayerCount + 1
+        end
+
+        if not (keyInput == "\32") and not players[keyInput] and currentPlayerCount <= 32 then 
+            local sprite = sprites[playerCount % #sprites + 1]
+            players[keyInput] = {x = posx, y = posy, width = 8, height = 8, boundsOffsetX = 0, boundsOffsetY = 0, vx = 0, 
+            vy = 0, onGround = false, bounce_force = minBounceForce, key=keyInput, 
+            sprite = sprite, disabled = false}
+            playerCount = playerCount + 1
+
+            posx = posx + 9
+            if (posx >= 120) then
+                
+                if xOffset >= 8 then
+                    xOffset = 0
+                else
+                    xOffset = xOffset + 2
+                end
+
+                posx = xOffset
+
+                posy = posy + 9
             end
         end
+
+        -- exit player selection and start the game
+        if keyInput == "\32" then 
+            return true
+        end  
+
+        
     end
+
+    return false
 end
 
 -- apply "physics" to all players
@@ -106,70 +134,19 @@ function updatePlayers()
                 player.vy = min(player.vy, maxFallVelocity)
             end
 
-            --[[
-                for _, bird in ipairs(activeBirdList) do
-                    if check_bound_collision(player, bird) then
-                        -- Handle collision
-                        print("Collision detected!")
-                    end
-                end
-                ]]
             
-                if check_bound_collision(player, bird.bird) then
+            for _, respawn in ipairs(activeBirdList) do
+                if check_bound_collision(player, respawn.bird) then
                     -- Handle collision
-                    print("Collision detected!")
+                    printh("Collision detected!")
+                    respawnPlayer(respawn)
                 end
+            end
+
+        
             
         end
     end
-end
-
-function has_flag(flags, flag)
-    for _, f in ipairs(flags) do 
-        if f == flag then
-            return true
-        end
-    end
-    return false
-end
-
-function get_tile_flags(x, y, width, height)
-    local flags = {}
-    for dx = 0, width - 1 do
-        for dy = 0, height - 1 do
-
-            --Convert pixel coordinates to tile coordinates
-            local tile_x = flr((x + dx) / 8)
-            local tile_y = flr((y + dy) / 8)
-
-            if is_solid_tile(tile_x,tile_y) then
-                add_unique(flags, 8) -- 8 flag is collision
-            end
-
-            for flag = 0, 7 do
-                local flagFound = fget(mget(tile_x, tile_y), flag)
-                if flagFound then
-                    add_unique(flags, flag)
-                end
-            end
-            
-        end
-    end
-    return flags
-end
-
-function is_solid_tile(tile_x, tile_y)
-
-    -- Get the tile ID at the specified map position
-    local tile_id = mget(tile_x, tile_y)
-
-    -- Check if the tile ID is in the list of solid tiles
-    for solid_tile in all(solid_tiles) do
-        if tile_id == solid_tile then
-            return true
-        end
-    end
-    return false
 end
 
 -- look up key associated with player and bounce them
@@ -191,52 +168,7 @@ function resetPlayers()
     maxFallVelocity = 10
 
 
-end
-    
-    -- spawn players
-function initPlayers()
-    local sprites = {33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64}
-
-    if stat(30) then 
-        local keyInput = stat(31)
-        
-        local currentPlayerCount = 1
-        for _ in pairs(players) do
-            currentPlayerCount = currentPlayerCount + 1
-        end
-
-        if not (keyInput == "\32") and not players[keyInput] and currentPlayerCount <= 32 then 
-            local sprite = sprites[playerCount % #sprites + 1]
-            players[keyInput] = {x = posx, y = posy, width = 8, height = 8, cx = 0, cy = 0, vx = 0, 
-            vy = 0, onGround = false, bounce_force = minBounceForce, key=keyInput, 
-            sprite = sprite, disabled = false}
-            playerCount = playerCount + 1
-
-            posx = posx + 9
-            if (posx >= 120) then
-                
-                if xOffset >= 8 then
-                    xOffset = 0
-                else
-                    xOffset = xOffset + 2
-                end
-
-                posx = xOffset
-
-                posy = posy + 9
-            end
-        end
-
-        -- exit player selection and start the game
-        if keyInput == "\32" then 
-            return true
-        end  
-
-        
-    end
-
-    return false
-end
+end 
 
 function DEBUG_updatePlayers()
     for key, player in pairs(players) do
@@ -298,6 +230,12 @@ function addRespawnBird()
 
 end
 
+function respawnPlayer(respawn)
+    local p = players[respawn.playerKey]
+    enablePlayer(p)
+    del(activeBirdList, respawn)
+end
+
 function update_respawns()
 
     if respawnTimer() and not(respawnQueue:isempty()) then
@@ -321,7 +259,12 @@ function update_respawns()
         del(activeBirdList, returnToQueue)
     end
 
+end
 
+function drawPlayers()
+    for key, player in pairs(players) do
+        spr(player.sprite, player.x, player.y)
+    end
 
 end
 
@@ -329,8 +272,6 @@ function drawRespawnBirds()
     for _, respawn in ipairs(activeBirdList) do
         spr(respawn.bird.sprite, respawn.bird.x, respawn.bird.y)
     end
-
-    spr(bird.bird.sprite, bird.bird.x, bird.bird.y)
 end
 
 function get_player_count()
@@ -341,10 +282,22 @@ function get_disabled_count()
     return disabledPlayerCount
 end
 
+function checkForOutOfBounds(leftBounds)    
+    for key, player in pairs(players) do
+        if not(player.disabled) then 
+            if player.y > 128 then
+                disablePlayer(player)
+            elseif player.x < leftBounds then
+                disablePlayer(player)
+            end
+        end
+    end
+end
+
 function get_edges(obj)
     -- Calculate reference point
-    local center_x = obj.x + (obj.width * obj.cx) - (obj.width / 2)
-    local center_y = obj.y + (obj.height * obj.cy) - (obj.height / 2)
+    local center_x = obj.x + obj.boundsOffsetX
+    local center_y = obj.y + obj.boundsOffsetY
     
     local half_w = obj.width / 2
     local half_h = obj.height / 2
@@ -365,4 +318,52 @@ function check_bound_collision(a, b)
            a_edges.right > b_edges.left and
            a_edges.top < b_edges.bottom and
            a_edges.bottom > b_edges.top
+end
+
+function has_flag(flags, flag)
+    for _, f in ipairs(flags) do 
+        if f == flag then
+            return true
+        end
+    end
+    return false
+end
+
+function get_tile_flags(x, y, width, height)
+    local flags = {}
+    for dx = 0, width - 1 do
+        for dy = 0, height - 1 do
+
+            --Convert pixel coordinates to tile coordinates
+            local tile_x = flr((x + dx) / 8)
+            local tile_y = flr((y + dy) / 8)
+
+            if is_solid_tile(tile_x,tile_y) then
+                add_unique(flags, 8) -- 8 flag is collision
+            end
+
+            for flag = 0, 7 do
+                local flagFound = fget(mget(tile_x, tile_y), flag)
+                if flagFound then
+                    add_unique(flags, flag)
+                end
+            end
+            
+        end
+    end
+    return flags
+end
+
+function is_solid_tile(tile_x, tile_y)
+
+    -- Get the tile ID at the specified map position
+    local tile_id = mget(tile_x, tile_y)
+
+    -- Check if the tile ID is in the list of solid tiles
+    for solid_tile in all(solid_tiles) do
+        if tile_id == solid_tile then
+            return true
+        end
+    end
+    return false
 end
