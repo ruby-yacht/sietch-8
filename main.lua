@@ -9,6 +9,7 @@ local distanceScore = 10
 local distanceThresholdToScore = 32
 local timeUntilRestart = 2
 local debug = false
+local victory = false
 
 poke(0x5F2D, 0x1) -- enable keyboard input
 
@@ -25,6 +26,8 @@ function _init()
     timeUntilRestart = 2
     --createChunks()
     last_time = time()
+    victory = false
+
 end
 
 function _update()
@@ -47,20 +50,28 @@ function _update()
             bouncePlayer(keyInput)
         end
 
-        if timeUntilCameraMoves > 0 then
+        if victory then
+            timeUntilCameraMoves = 10
+        end
+
+        if timeUntilCameraMoves > 0 and victory == false then
             timeUntilCameraMoves -= delta_time
         else
-            if camera_x >= 896 then
-                camera_x = 896
+            if victory==false then
+                if camera_x >= 896 then
+                    camera_x = 896
+                else
+                    camera_x = camera_x + .5
+                end            
+
+                if camera_x >= distanceThresholdToScore then
+                    score = score + distanceScore
+                    distanceThresholdToScore = distanceThresholdToScore + 32
+                end
             else
-                camera_x = camera_x + .5
-            end            
-
-            if camera_x >= distanceThresholdToScore then
-                score = score + distanceScore
-                distanceThresholdToScore = distanceThresholdToScore + 32
+                printh("victory status: "..tostr(victory).."\n")
+                printh("sum1 victorious")
             end
-
         end
        
     elseif gameOver then
@@ -111,6 +122,12 @@ function _draw()
         print("Frame rate: " .. stat(7), camera_x,24)
     end  
       
+end
+
+
+function win_trigger()
+    printh ("win_trigger.... triggered.")
+    victory = true
 end
 
 function restart()

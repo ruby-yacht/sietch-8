@@ -98,6 +98,7 @@ function updatePlayers()
 
                 if has_flag(flags, 7) then
                     printh("victory!")
+                    win_trigger()
                 end
             else
                 player.onGround = false
@@ -112,6 +113,8 @@ function updatePlayers()
     end
 end
 
+
+
 function has_flag(flags, flag)
     for _, f in ipairs(flags) do 
         if f == flag then
@@ -120,6 +123,7 @@ function has_flag(flags, flag)
     end
     return false
 end
+
 
 function get_tile_flags(x, y, width, height)
     local flags = {}
