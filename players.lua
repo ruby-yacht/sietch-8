@@ -53,7 +53,8 @@ function initPlayers()
             currentPlayerCount = currentPlayerCount + 1
         end
 
-        if not (keyInput == "\32") and not players[keyInput] and currentPlayerCount <= 32 then 
+        if not (keyInput == "\32") and not (keyInput == "\13") and not (keyInput == "\112") and not players[keyInput] and currentPlayerCount <= 32 then 
+            printh(keyInput)
             local sprite = sprites[playerCount % #sprites + 1]
             players[keyInput] = {x = posx, y = posy, width = 8, height = 8, boundsOffsetX = 0, boundsOffsetY = 0, vx = 0, 
             vy = 0, onGround = false, bounce_force = minBounceForce, key=keyInput, 
