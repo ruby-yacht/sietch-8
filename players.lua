@@ -27,6 +27,8 @@ victory_tile = 11
 
 poke(0x5F2D, 0x1) -- enable keyboard input
 
+local bird = {bird = {x = 50, y = 50, width = 8, height = 16, cx = 0, cy = 4, sprite = 1}, playerKey = 3}
+
 function drawPlayers()
     for key, player in pairs(players) do
         spr(player.sprite, player.x, player.y)
@@ -39,7 +41,7 @@ function disablePlayer(player)
     player.x = -8
     player.y = -8
     disabledPlayerCount = disabledPlayerCount + 1
-    respawnQueue:enqueue_unique({bird = {x = -8, y = -8, sprite = 1}, playerKey = player.key})
+    respawnQueue:enqueue_unique({bird = {x = -8, y = -8, width = 8, height = 16, cx = 0, cy = 4, sprite = 1}, playerKey = player.key})
 end
 
 function checkForOutOfBounds(leftBounds)    
@@ -103,8 +105,20 @@ function updatePlayers()
                 player.vy = player.vy + GRAVITY
                 player.vy = min(player.vy, maxFallVelocity)
             end
-            
 
+            --[[
+                for _, bird in ipairs(activeBirdList) do
+                    if check_bound_collision(player, bird) then
+                        -- Handle collision
+                        print("Collision detected!")
+                    end
+                end
+                ]]
+            
+                if check_bound_collision(player, bird.bird) then
+                    -- Handle collision
+                    print("Collision detected!")
+                end
             
         end
     end
@@ -193,7 +207,7 @@ function initPlayers()
 
         if not (keyInput == "\32") and not players[keyInput] and currentPlayerCount <= 32 then 
             local sprite = sprites[playerCount % #sprites + 1]
-            players[keyInput] = {x = posx, y = posy, width = 8, height = 8, vx = 0, 
+            players[keyInput] = {x = posx, y = posy, width = 8, height = 8, cx = 0, cy = 0, vx = 0, 
             vy = 0, onGround = false, bounce_force = minBounceForce, key=keyInput, 
             sprite = sprite, disabled = false}
             playerCount = playerCount + 1
@@ -315,6 +329,8 @@ function drawRespawnBirds()
     for _, respawn in ipairs(activeBirdList) do
         spr(respawn.bird.sprite, respawn.bird.x, respawn.bird.y)
     end
+
+    spr(bird.bird.sprite, bird.bird.x, bird.bird.y)
 end
 
 function get_player_count()
@@ -323,4 +339,30 @@ end
 
 function get_disabled_count()
     return disabledPlayerCount
+end
+
+function get_edges(obj)
+    -- Calculate reference point
+    local center_x = obj.x + (obj.width * obj.cx) - (obj.width / 2)
+    local center_y = obj.y + (obj.height * obj.cy) - (obj.height / 2)
+    
+    local half_w = obj.width / 2
+    local half_h = obj.height / 2
+    
+    return {
+        left = center_x - half_w,
+        right = center_x + half_w,
+        top = center_y - half_h,
+        bottom = center_y + half_h
+    }
+end
+
+function check_bound_collision(a, b)
+    local a_edges = get_edges(a)
+    local b_edges = get_edges(b)
+    
+    return a_edges.left < b_edges.right and
+           a_edges.right > b_edges.left and
+           a_edges.top < b_edges.bottom and
+           a_edges.bottom > b_edges.top
 end
