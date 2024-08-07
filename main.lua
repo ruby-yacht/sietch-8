@@ -117,7 +117,7 @@ function _draw()
         print("game over", camera_x, 0, 7)
     end
 
-    if true then
+    if (debug) then
         print("CPU usage: " .. stat(1) * 100  .. "%", camera_x,8)
         print("Memery usage: " .. stat(0) .. " bytes", camera_x,16)
         print("Frame rate: " .. stat(7), camera_x,24)
