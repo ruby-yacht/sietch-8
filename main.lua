@@ -71,7 +71,7 @@ function _update()
         else
             timeUntilRestart = 2
             restart()
-
+            
             -- shahbaz you can clean this up. 
             if (debug) then
                 printh("pre-restart vals: \n")
@@ -93,7 +93,11 @@ function _draw()
     cls()
 
     --loadChunksIntoView(camera_x) :(
-    map(0, 0, 0, 0, 128, 16)
+    if gameStarted then
+        map(0, 0, 0, 0, 128, 16)
+    elseif gameOver == false then
+        print("\^w\^thop" .. get_player_count(), 46,56)
+    end
     drawPlayers(gameStarted)
     drawRespawnBirds()
     camera(camera_x, camera_y)
@@ -113,8 +117,8 @@ function _draw()
         print("game over", camera_x, 0, 7)
     end
 
-    if (debug) then
-        print("CPU usage: " .. stat(1) .. "%", camera_x,8)
+    if true then
+        print("CPU usage: " .. stat(1) * 100  .. "%", camera_x,8)
         print("Memery usage: " .. stat(0) .. " bytes", camera_x,16)
         print("Frame rate: " .. stat(7), camera_x,24)
     end  
