@@ -31,6 +31,8 @@ function disablePlayer(player)
     player.disabled = true
     player.x = -8
     player.y = -8
+    player.vx = 0
+    player.vy = 0
     disabledPlayerCount = disabledPlayerCount + 1
     respawnQueue:enqueue_unique({bird = {x = -8, y = -8, width = 8, height = 16, boundsOffsetX = 0, boundsOffsetY = 4, sprite = 1}, playerKey = player.key})
 end
