@@ -74,7 +74,7 @@ function initPlayers()
         end
 
         -- exit player selection and start the game
-        if keyInput == "\32" then 
+        if keyInput == "\32" and get_player_count() > 0 then 
             return true
         end  
 
