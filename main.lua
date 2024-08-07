@@ -10,6 +10,8 @@ local distanceThresholdToScore = 32
 local timeUntilRestart = 2
 local debug = false
 local victory = false
+local win_order = {}
+local start_time = 0
 
 poke(0x5F2D, 0x1) -- enable keyboard input
 
@@ -27,7 +29,7 @@ function _init()
     --createChunks()
     last_time = time()
     victory = false
-
+    start_time = time()
 end
 
 function _update()
@@ -125,9 +127,12 @@ function _draw()
 end
 
 
-function win_trigger()
+function win_trigger(winner)
     printh ("win_trigger.... triggered.")
     victory = true
+    win_order[winner] = time() - start_time
+    printh("winning player: " .. tostr(winner) .."\ntime: "..tostr(time()-start_time))
+
 end
 
 function restart()
@@ -147,6 +152,7 @@ function restart()
     --initPlayers()
     resetPlayers()
     last_time = time()
+    start_time = time()
 
 end
 

@@ -94,11 +94,14 @@ function updatePlayers()
                 player.bounce_force = max(player.bounce_force - .08, maxBounceForce)
                 player.vx = 0
                 player.onGround = true
-                printh("player at\nx: "..player.x..", y: "..player.y)
+                --printh("player at\nx: "..player.x..", y: "..player.y)
 
                 if has_flag(flags, 7) then
-                    printh("victory!")
-                    win_trigger()
+                    if not(player.won) then
+                        printh("victory!")
+                        player.won = true
+                        win_trigger(key)
+                    end
                 end
             else
                 player.onGround = false
@@ -169,7 +172,7 @@ end
 -- look up key associated with player and bounce them
 function bouncePlayer(key)
     local player = players[key]
-    if not (player == nil) and player.onGround then
+    if not (player == nil) and player.onGround and not(player.won) then
         player.vy = player.bounce_force
         player.vx = 1
         player.bounce_force = minBounceForce
@@ -201,9 +204,20 @@ function initPlayers()
 
         if not (keyInput == "\32") and not players[keyInput] and currentPlayerCount <= 32 then 
             local sprite = sprites[playerCount % #sprites + 1]
-            players[keyInput] = {x = posx, y = posy, width = 8, height = 8, vx = 0, 
-            vy = 0, onGround = false, bounce_force = minBounceForce, key=keyInput, 
-            sprite = sprite, disabled = false}
+            players[keyInput] = {
+                x = posx, 
+                y = posy, 
+                width = 8, 
+                height = 8, 
+                vx = 0, 
+                vy = 0, 
+                onGround = false, 
+                bounce_force = minBounceForce, 
+                key=keyInput, 
+                sprite = sprite, 
+                disabled = false,
+                won = false
+            }
             playerCount = playerCount + 1
 
             posx = posx + 9
