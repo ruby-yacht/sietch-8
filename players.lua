@@ -334,26 +334,29 @@ end
 
 function get_tile_flags(x, y, width, height)
     local flags = {}
-    for dx = 0, width - 1 do
-        for dy = 0, height - 1 do
+    -- Calculate the tile range based on the tile coordinates
+    local tile_x_start = flr(x / 8)
+    local tile_y_start = flr(y / 8)
+    local tile_x_end = flr((x + width - 1) / 8)
+    local tile_y_end = flr((y + height - 1) / 8)
 
-            --Convert pixel coordinates to tile coordinates
-            local tile_x = flr((x + dx) / 8)
-            local tile_y = flr((y + dy) / 8)
-
-            if is_solid_tile(tile_x,tile_y) then
-                add_unique(flags, 8) -- 8 flag is collision
-            end
-
+    for tile_x = tile_x_start, tile_x_end do
+        for tile_y = tile_y_start, tile_y_end do
+            -- Check the tile for flags
+            local tile_flags = mget(tile_x, tile_y)
             for flag = 0, 7 do
-                local flagFound = fget(mget(tile_x, tile_y), flag)
-                if flagFound then
+                if fget(tile_flags, flag) then
                     add_unique(flags, flag)
                 end
             end
-            
+
+            -- Check if the tile is solid
+            if is_solid_tile(tile_x, tile_y) then
+                add_unique(flags, 8) -- 8 flag is collision
+            end
         end
     end
+
     return flags
 end
 
