@@ -4,6 +4,7 @@ local BOUNCE_FACTOR = -8  -- Factor to bounce back after collision
 -- game variables
 local players = {}
 local playerCount = 0
+local playerWonCount = 0
 local minBounceForce = -6
 local maxBounceForce = -10
 local maxPlayers = 32
@@ -100,7 +101,8 @@ function updatePlayers()
                     if not(player.won) then
                         printh("victory!")
                         player.won = true
-                        win_trigger(key)
+                        playerWonCount += 1
+                        win_trigger(player.sprite)
                     end
                 end
             else

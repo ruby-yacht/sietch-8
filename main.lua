@@ -1,6 +1,7 @@
 local gameStarted = false
 local gameOver = false
 local camera_x = 0
+local camera_y = 0
 local timeUntilCameraMoves = 1.5
 local last_time = 0
 local delta_time = 0
@@ -96,43 +97,115 @@ function _update()
 end
 
 function _draw()
-    cls()
-
-    --loadChunksIntoView(camera_x) :(
-    map(0, 0, 0, 0, 128, 16)
-    drawPlayers(gameStarted)
-    camera(camera_x, camera_y)
+    
 
 
+    if victory then
+        cls(12)
+        draw_winners(camera_x, camera_y)
 
-    if gameStarted == false then
-        rectfill(0, 0, 64, 8, 0)
-        print("Press any key to add a player", 0, 0, 7)
     else
-        rectfill(camera_x, 0, camera_x +  32, 8, 0)
-        print("Score " .. score, camera_x, 0, 7)
-    end
+        cls()
+        --loadChunksIntoView(camera_x) :(
+        map(0, 0, 0, 0, 128, 16)
+        drawPlayers(gameStarted)
+        camera(camera_x, camera_y)
 
-    if gameOver then
-        rectfill(camera_x, 0, camera_x +  32, 8, 0)
-        print("game over", camera_x, 0, 7)
-    end
+        if gameStarted == false then
+            rectfill(0, 0, 64, 8, 0)
+            print("Press any key to add a player", 0, 0, 7)
+        else
+            rectfill(camera_x, 0, camera_x +  32, 8, 0)
+            print("Score " .. score, camera_x, 0, 7)
+        end
 
-    if (debug) then
-        print("CPU usage: " .. stat(1) .. "%", camera_x,8)
-        print("Memery usage: " .. stat(0) .. " bytes", camera_x,16)
-        print("Frame rate: " .. stat(7), camera_x,24)
-    end  
-      
+        if gameOver then
+            rectfill(camera_x, 0, camera_x +  32, 8, 0)
+            print("game over", camera_x, 0, 7)
+        end
+
+        if (debug) then
+            print("CPU usage: " .. stat(1) .. "%", camera_x,8)
+            print("Memery usage: " .. stat(0) .. " bytes", camera_x,16)
+            print("Frame rate: " .. stat(7), camera_x,24)
+        end  
+    end
 end
 
 
 function win_trigger(winner)
-    printh ("win_trigger.... triggered.")
-    victory = true
+    --printh ("win_trigger.... triggered.")
+    if playerCount == playerWonCount then
+        victory = true
+    end
     win_order[winner] = time() - start_time
-    printh("winning player: " .. tostr(winner) .."\ntime: "..tostr(time()-start_time))
+    --printh("winning player: " .. tostr(winner) .."\ntime: "..tostr(time()-start_time))
 
+end
+
+-- function draw_winners()
+--     win_list = "player\t\t\t\ttime..\n"
+--     indent = "    "
+--     for key, val in pairs(win_order) do
+--         win_list = win_list..indent..key.."\t\t\t\t"..val.."\n"
+--     end
+--     return win_list
+-- end
+
+function sort_by_value(tbl)
+    -- Create an array of key-value pairs
+    local sorted_pairs = {}
+    for k, v in pairs(tbl) do
+        --add(sorted_pairs, {key = k, val = value})
+        sorted_pairs[k] = v
+    end
+
+    -- Bubble sort algorithm
+    for i = 1, #sorted_pairs do
+        for j = 1, #sorted_pairs do
+            if tonum(sorted_pairs[j].value) > tonum(sorted_pairs[j + 1].value) then
+                -- Swap
+                sorted_pairs[j], sorted_pairs[j + 1] = sorted_pairs[j + 1], sorted_pairs[j]
+            end
+        end
+    end
+
+    return sorted_pairs
+end
+
+function draw_winners(x, y)
+    local indent = ""  -- space between sprites and text
+    local line_height = 10  -- vertical space between lines
+    local current_y = y
+    
+    -- Print header
+    print("\t\t\t  survivors\n", x, current_y, 10)
+    current_y = current_y + line_height
+    leftCounter = 0
+    sorted_win_order = sort_by_value(win_order)
+    printh("sorted table: ".."\n")
+    print_table(sorted_win_order)
+    -- Iterate through the win_order table
+    for key, val in pairs(sorted_win_order) do
+        -- Lookup the player sprite number using the key
+        printh("val: "..val.."\n")
+        xOffset = leftCounter * 32
+        spr(key, x + xOffset, current_y)
+        print(tostr(flr(tonum(val) * 100) / 100)..indent.."\n", x + 12 + xOffset, current_y, 10)
+        if leftCounter == 3 then
+            current_y = current_y + line_height
+        end
+        leftCounter = (leftCounter + 1) % 4
+    end
+end
+
+function print_table(tbl)
+    for i = 1, #tbl do
+        for k, v in pairs(tbl[i]) do
+            printh ("key: "..tostr(k).." value: "..tostr(v).."\n")
+        end
+    --printh (tostr(tbl[i]).."\n")
+    end
 end
 
 function restart()
