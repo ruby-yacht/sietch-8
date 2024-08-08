@@ -179,7 +179,7 @@ function draw_winners(x, y)
     local current_y = y
     
     -- Print header
-    print("\t\t\t  survivors\n", x, current_y, 10)
+    print("\t\t\t survivors\n", x, current_y, 10)
     current_y = current_y + line_height
     leftCounter = 0
     sorted_win_order = sort_by_value(win_order)
@@ -188,7 +188,7 @@ function draw_winners(x, y)
     -- Iterate through the win_order table
     for key, val in pairs(sorted_win_order) do
         -- Lookup the player sprite number using the key
-        printh("val: "..val.."\n")
+        --printh("val: "..val.."\n")
         xOffset = leftCounter * 32
         spr(key, x + xOffset, current_y)
         print(tostr(flr(tonum(val) * 100) / 100)..indent.."\n", x + 12 + xOffset, current_y, 10)
