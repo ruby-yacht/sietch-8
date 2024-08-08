@@ -44,10 +44,13 @@ function _update()
         checkForOutOfBounds(camera_x-16)
         gameOver = (get_disabled_count() == get_player_count())
 
-        if stat(30) then
+        while stat(30) do
             keyInput = stat(31)
             bouncePlayer(keyInput)
+            printh("jump " .. keyInput)
+            
         end
+        printh("------")
 
         if timeUntilCameraMoves > 0 then
             timeUntilCameraMoves -= delta_time
