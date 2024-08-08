@@ -46,11 +46,8 @@ function _update()
 
         while stat(30) do
             keyInput = stat(31)
-            bouncePlayer(keyInput)
-            printh("jump " .. keyInput)
-            
+            bouncePlayer(keyInput)       
         end
-        printh("------")
 
         if timeUntilCameraMoves > 0 then
             timeUntilCameraMoves -= delta_time
