@@ -162,10 +162,10 @@ function sort_by_value(tbl)
 
     -- Bubble sort algorithm
     for i = 1, #sorted_pairs do
-        for j = 1, #sorted_pairs do
-            if tonum(sorted_pairs[j].value) > tonum(sorted_pairs[j + 1].value) then
+        for j = i + 1, #sorted_pairs-1 do
+            if tonum(sorted_pairs[i].value) > tonum(sorted_pairs[j].value) then
                 -- Swap
-                sorted_pairs[j], sorted_pairs[j + 1] = sorted_pairs[j + 1], sorted_pairs[j]
+                sorted_pairs[i], sorted_pairs[j] = sorted_pairs[j], sorted_pairs[i]
             end
         end
     end
