@@ -208,6 +208,7 @@ function restart()
     resetPlayers()
     last_time = time()
     start_time = time()
+    win_order = {}
 
 end
 
