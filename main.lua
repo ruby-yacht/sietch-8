@@ -1,10 +1,11 @@
+
 local gameStarted = false
 local gameOver = false
 local camera_x = 0
 local camera_y = 0
 local timeUntilCameraMoves = 1.5
-local last_time = 0
-local delta_time = 0
+last_time = 0
+delta_time = 0
 local score = 0
 local distanceScore = 10
 local distanceThresholdToScore = 32
@@ -46,11 +47,13 @@ function _update()
         else
             updatePlayers()
         end
-        gameOver = checkForOutOfBounds(camera_x-16)
+        update_respawns()
+        checkForOutOfBounds(camera_x-16)
+        gameOver = (get_disabled_count() == get_player_count())
 
-        if stat(30) then
+        while stat(30) do
             keyInput = stat(31)
-            bouncePlayer(keyInput)
+            bouncePlayer(keyInput)       
         end
 
         if victory then
@@ -81,13 +84,8 @@ function _update()
         if timeUntilRestart > 0 then
             timeUntilRestart -= delta_time
         else
-            printh("pre-restart vals: \n")
-            print_global_vals()
             timeUntilRestart = 2
-            printh("RESTARTING...")
             restart()
-            printh("post-restart vals: \n")
-            print_global_vals()            
         end
         --nothing
     else -- character select screen
@@ -99,7 +97,6 @@ function _draw()
     if victory then
         cls(12)
         draw_winners(camera_x, camera_y)
-
     else
         cls()
         map(0, 0, 0, 0, 128, 16)
@@ -143,7 +140,6 @@ function sort_by_value(tbl)
             sorted_pairs[#sorted_pairs + 1] = {tbl[i][1], tbl[i][2]}
         end
     end
-
     for i = 1, #sorted_pairs+1 do
         for j = i + 1, #sorted_pairs do
             if tonum(sorted_pairs[i][2]) > tonum(sorted_pairs[j][2]) then
@@ -176,6 +172,11 @@ function draw_winners(x, y)
         leftCounter = (leftCounter + 1) % 4
         --end
     end
+    if (debug) then
+        print("CPU usage: " .. stat(1) * 100  .. "%", camera_x,8)
+        print("Memery usage: " .. stat(0) .. " bytes", camera_x,16)
+        print("Frame rate: " .. stat(7), camera_x,24)
+    end  
 end
 
 function print_table(tbl)
