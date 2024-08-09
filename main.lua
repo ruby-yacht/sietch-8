@@ -223,4 +223,5 @@ function print_global_vals()
     printh ("distanceScore: "..tostr(distanceScore).."\n")
     printh ("distanceThresholdToScore: "..tostr(distanceThresholdToScore).."\n")
     printh ("distanceScore: "..tostr(distanceScore).."\n") 
+    printh ("win_order: \n"..print_win_table().."\n")
 end
