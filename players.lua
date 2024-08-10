@@ -56,9 +56,22 @@ function initPlayers()
 
         if not (keyInput == "\32") and not (keyInput == "\13") and not (keyInput == "\112") and not players[keyInput] and currentPlayerCount <= 32 then 
             local sprite = sprites[playerCount % #sprites + 1]
-            players[keyInput] = {x = posx, y = posy, width = 8, height = 8, boundsOffsetX = 0, boundsOffsetY = 0, vx = 0, 
-            vy = 0, onGround = false, bounce_force = minBounceForce, key=keyInput, 
-            sprite = sprite, disabled = false}
+            players[keyInput] = {
+                x = posx, 
+                y = posy, 
+                width = 8, 
+                height = 8, 
+                boundsOffsetX = 0, 
+                boundsOffsetY = 0, 
+                vx = 0, 
+                vy = 0, 
+                onGround = false, 
+                bounce_force = minBounceForce, 
+                key=keyInput, 
+                sprite = sprite, 
+                disabled = false,
+                won = false
+            }
             playerCount = playerCount + 1
 
             posx = posx + 9
@@ -124,6 +137,7 @@ function updatePlayers()
                 player.bounce_force = max(player.bounce_force - .08, maxBounceForce)
                 player.vx = 0
                 player.onGround = true
+
                 -- add debug check
                 --printh("player at\nx: "..player.x..", y: "..player.y)
 
@@ -141,6 +155,13 @@ function updatePlayers()
                 player.vy = player.vy + GRAVITY
                 player.vy = min(player.vy, maxFallVelocity)
             end
+            for _, respawn in ipairs(activeBirdList) do
+                if check_bound_collision(player, respawn.bird) then
+                    -- Handle collision
+                    printh("Collision detected!")
+                    respawnPlayer(respawn)
+                end
+            end            
         end
     end
 end
@@ -174,16 +195,9 @@ function get_tile_flags(x, y, width, height)
                 local flagFound = fget(mget(tile_x, tile_y), flag)
                 if flagFound then
                     add_unique(flags, flag)
-            for _, respawn in ipairs(activeBirdList) do
-                if check_bound_collision(player, respawn.bird) then
-                    -- Handle collision
-                    printh("Collision detected!")
-                    respawnPlayer(respawn)
-                end
-            end
-
-        
             
+                end
+            end    
         end
     end
 end
@@ -205,62 +219,6 @@ function resetPlayers()
     maxBounceForce = -10
     maxPlayers = 32
     maxFallVelocity = 10
-end
-    
-    -- spawn players
-function initPlayers()
-    local sprites = {33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64}
-
-    if stat(30) then 
-        local keyInput = stat(31)
-        
-        local currentPlayerCount = 1
-        for _ in pairs(players) do
-            currentPlayerCount = currentPlayerCount + 1
-        end
-
-        if not (keyInput == "\32") and not players[keyInput] and currentPlayerCount <= 32 then 
-            local sprite = sprites[playerCount % #sprites + 1]
-            players[keyInput] = {
-                x = posx, 
-                y = posy, 
-                width = 8, 
-                height = 8, 
-                vx = 0, 
-                vy = 0, 
-                onGround = false, 
-                bounce_force = minBounceForce, 
-                key=keyInput, 
-                sprite = sprite, 
-                disabled = false,
-                won = false
-            }
-            playerCount = playerCount + 1
-
-            posx = posx + 9
-            if (posx >= 120) then
-                
-                if xOffset >= 8 then
-                    xOffset = 0
-                else
-                    xOffset = xOffset + 2
-                end
-
-                posx = xOffset
-
-                posy = posy + 9
-            end
-        end
-
-        -- exit player selection and start the game
-        if keyInput == "\32" then 
-            return true
-        end  
-
-        
-    end
-
-    return false
 end
 
 function DEBUG_updatePlayers()
