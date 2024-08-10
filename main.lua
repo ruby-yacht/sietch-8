@@ -1,8 +1,8 @@
 
 local gameStarted = false
 local gameOver = false
-local camera_x = 0
-local camera_y = 0
+camera_x = 0
+camera_y = 0
 local timeUntilCameraMoves = 1.5
 last_time = 0
 delta_time = 0

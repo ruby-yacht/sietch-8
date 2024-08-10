@@ -174,6 +174,9 @@ function get_tile_flags(x, y, width, height)
                 local flagFound = fget(mget(tile_x, tile_y), flag)
                 if flagFound then
                     add_unique(flags, flag)
+                end
+            end
+            
             for _, respawn in ipairs(activeBirdList) do
                 if check_bound_collision(player, respawn.bird) then
                     -- Handle collision
