@@ -28,10 +28,12 @@ function _init()
     distanceScore = 10
     distanceThresholdToScore = 32
     timeUntilRestart = 2
-    --createChunks()
+    initLines()
     last_time = time()
     victory = false
     start_time = time()
+
+    
 end
 
 function _update()
@@ -68,6 +70,7 @@ function _update()
                     camera_x = 896
                 else
                     camera_x = camera_x + .5
+                    camera(camera_x, camera_y)
                 end            
 
                 if camera_x >= distanceThresholdToScore then
@@ -102,10 +105,10 @@ function _draw()
         
     else
         cls()
-        map(0, 0, 0, 0, 128, 16)
+        drawLines()
         drawPlayers(gameStarted)
         drawRespawnBirds()
-        camera(camera_x, camera_y)
+        
 
         --loadChunksIntoView(camera_x) :(
         if gameStarted then
