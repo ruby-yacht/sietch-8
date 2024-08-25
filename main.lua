@@ -37,6 +37,7 @@ function _init()
 end
 
 function _update()
+    
     local current_time = time()  -- Get the current time
     delta_time = current_time - last_time  -- Calculate delta time
     last_time = current_time  
@@ -49,6 +50,9 @@ function _update()
         else
             updatePlayers()
         end
+        
+        printh(get_mean_players_position() .. " <= " .. camera_x + 64)
+
         update_respawns()
         checkForOutOfBounds(camera_x-16)
         gameOver = (get_disabled_count() == get_player_count())

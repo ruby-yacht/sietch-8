@@ -1,5 +1,5 @@
 local LINE_MIN_LENGTH = 50
-local LINE_MAX_LENGTH = 50
+local LINE_MAX_LENGTH = 100
 local LINE_SPACING = {10, 20}
 local LINE_MIN_HEIGHT = 100
 local LINE_MAX_HEIGHT = 120
@@ -11,8 +11,8 @@ activeLines = {}
 
 function initLines()
     activeLines = nil
-    nextPositionToCreateNewLine = LINE_MAX_LENGTH
-    activeLines = initLine(activeLines, 0, LINE_MIN_HEIGHT, LINE_MAX_LENGTH)
+    activeLines = initLine(activeLines, 0, 120, 140)
+    nextPositionToCreateNewLine = activeLines.length
     activeLines = appendLine(activeLines)
     activeLines = appendLine(activeLines)
 end
@@ -65,7 +65,7 @@ function appendLine(head)
         lastLine = lastLine.next
     end
 
-    return initLine(head, lastLine.start_x + lastLine.length + rnd(LINE_SPACING), LINE_MIN_HEIGHT, LINE_MAX_LENGTH)
+    return initLine(head, lastLine.start_x + lastLine.length + rnd(LINE_SPACING), getRandomHeight(), LINE_MAX_LENGTH)
 end
 
 function createRandomLine(head)
@@ -74,9 +74,19 @@ function createRandomLine(head)
         lastLine = lastLine.next
     end
 
-    local spacing = rnd(LINE_SPACING)
+    local spacing = getRandomSpacing()
     head.start_x = lastLine.start_x + lastLine.length + spacing
+    local height = flr(LINE_MIN_HEIGHT + rnd(LINE_MAX_HEIGHT - LINE_MIN_HEIGHT))
+    head.height = height
     return head
+end
+
+function getRandomSpacing()
+    return rnd(LINE_SPACING)
+end
+
+function getRandomHeight()
+    return flr(LINE_MIN_HEIGHT + rnd(LINE_MAX_HEIGHT - LINE_MIN_HEIGHT))
 end
 
 function updateLines(camera_x)

@@ -455,3 +455,14 @@ function is_solid_tile(tile_x, tile_y)
     end
     return false
 end
+
+function get_mean_players_position()
+    local positionSum = 0
+    for key, player in pairs(players) do
+        if not(player.disabled) then 
+            positionSum = positionSum + player.x
+        end
+    end
+
+    return positionSum / (playerCount - disabledPlayerCount)
+end
