@@ -1,26 +1,25 @@
 local LINE_MIN_LENGTH = 50
 local LINE_MAX_LENGTH = 50
-local LINE_MIN_SPACING = 10
-local LINE_MAX_SPACING = 20
+local LINE_SPACING = {10, 20}
 local LINE_MIN_HEIGHT = 100
 local LINE_MAX_HEIGHT = 120
-local LINE_CHAIN_LENGTH = 3
+LINE_CHAIN_LENGTH = 3
 
 -- init vars
 local nextPositionToCreateNewLine = 0
-local activeLines = {}
+activeLines = {}
 
 function initLines()
     activeLines = nil
-    nextPositionToCreateNewLine = 128
-    activeLines = createLine(activeLines, 0, LINE_MIN_HEIGHT, LINE_MAX_LENGTH)
+    nextPositionToCreateNewLine = LINE_MAX_LENGTH
+    activeLines = initLine(activeLines, 0, LINE_MIN_HEIGHT, LINE_MAX_LENGTH)
     activeLines = appendLine(activeLines)
     activeLines = appendLine(activeLines)
 end
 
 -- Creates a new line and appends it to the provided line list via head
 -- Should only be called in init()
-function createLine(head, start_x, height, length)
+function initLine(head, start_x, height, length)
     local line = {
         start_x = start_x,
         height = height,
@@ -66,11 +65,25 @@ function appendLine(head)
         lastLine = lastLine.next
     end
 
-    return createLine(head, lastLine.start_x + lastLine.length + LINE_MIN_SPACING, LINE_MIN_HEIGHT, LINE_MAX_LENGTH)
+    return initLine(head, lastLine.start_x + lastLine.length + rnd(LINE_SPACING), LINE_MIN_HEIGHT, LINE_MAX_LENGTH)
+end
+
+function createRandomLine(head)
+    local lastLine = head
+    while lastLine.next ~= nil do
+        lastLine = lastLine.next
+    end
+
+    local spacing = rnd(LINE_SPACING)
+    head.start_x = lastLine.start_x + lastLine.length + spacing
+    return head
 end
 
 function updateLines(camera_x)
-    if camera_x >= nextPositionToCreateNewLine then -- a chunk left the screen, load the next one
+    if camera_x > nextPositionToCreateNewLine then -- a line left the screen
+        activeLines = createRandomLine(activeLines)
+        activeLines = shiftHeadLineToEnd(activeLines)
+        nextPositionToCreateNewLine = activeLines.start_x + activeLines.length
         --chunkChain = getNextChunk(chunkChain) -- load the new chunk
         --chunkChain.pos_x = chunkChain.pos_x + (128 * 3) -- move chunk
         --chunkChain = shiftHeadChunkToEnd(chunkChain) -- shift first chunk to the end of the list
@@ -95,3 +108,44 @@ function drawLines()
     end
 
 end
+
+--[[
+unction check_collision(px, py)
+    for l in all(lines) do
+        if py + PLAYER_HEIGHT > l.y and py < l.y and px + PLAYER_WIDTH > l.x and px < l.x + LINE_LENGTH then
+            return l.y
+        end
+    end
+    return nil
+end
+
+-- _init function
+function _init()
+    init_lines()
+end
+
+-- _update function
+function _update()
+    -- move player with keyboard input
+    if btn(0) then PLAYER_X -= 2 end -- left
+    if btn(1) then PLAYER_X += 2 end -- right
+
+    -- gravity
+    PLAYER_Y_VEL += 0.2
+    PLAYER_Y += PLAYER_Y_VEL
+    
+    -- check for collision with lines
+    local collision_y = check_collision(PLAYER_X, PLAYER_Y)
+    if collision_y then
+        if PLAYER_Y_VEL > 0 then -- falling
+            PLAYER_Y = collision_y - PLAYER_HEIGHT
+            PLAYER_Y_VEL = 0
+        end
+    end
+
+    -- keep player within screen bounds
+    if PLAYER_X < 0 then PLAYER_X = 0 end
+    if PLAYER_X > 128 - PLAYER_WIDTH then PLAYER_X = 128 - PLAYER_WIDTH end
+    if PLAYER_Y > SCREEN_HEIGHT - PLAYER_HEIGHT then PLAYER_Y = SCREEN_HEIGHT - PLAYER_HEIGHT end
+end
+]]

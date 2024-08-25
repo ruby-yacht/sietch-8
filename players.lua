@@ -5,10 +5,11 @@ local BOUNCE_FACTOR = -8  -- Factor to bounce back after collision
 local players = {}
 local playerCount = 0
 local playerWonCount = 0
-local minBounceForce = -6
+local minBounceForce = -3
 local maxBounceForce = -10
+local bounceChargeRate = .13
 local maxPlayers = 32
-local maxFallVelocity = 10
+local maxFallVelocity = 5
 local respawnQueue = Queue.new()
 local activeBirdList = {}
 local respawnTimer = timer(2)
@@ -100,18 +101,51 @@ function initPlayers()
     return false
 end
 
+function check_ground_collision(px, py)
+
+    local l = activeLines     
+    for i = 1, LINE_CHAIN_LENGTH do
+        if py + 8 > l.height and py < l.height and px + 8 > l.start_x and px < l.start_x + l.length then
+            return l.height
+        end
+        l = l.next
+    end
+    return nil
+end
+
+
 -- apply "physics" to all players
 function updatePlayers() 
     
     for key, player in pairs(players) do
         if player.disabled == false then
 
+            player.vy = player.vy + GRAVITY
+            player.vy = min(player.vy, maxFallVelocity) -- player still falls through the ground at high speeds
+
             -- Calculate potential new positions
             local new_x = player.x + player.vx
             local new_y = player.y + player.vy
 
-            -- Check collisions with solid tiles
+            -- check for collision with lines
+            local collision_y = check_ground_collision(new_x, new_y)
+            if collision_y then
+                if player.vy > 0 then -- if just landed
+                    player.vx = 0
+                end
+                new_y = player.y
+                player.vy = 0   
+                player.bounce_force = max(player.bounce_force - bounceChargeRate, maxBounceForce)
+                player.onGround = true
+            else
+                player.onGround = false
+            end
 
+            player.x = new_x
+            player.y = new_y
+
+            -- Check collisions with solid tiles
+            --[[
             local flags = get_tile_flags(new_x, player.y, player.width, player.height)
             if not has_flag(flags, 8) then
                 player.x = new_x
@@ -119,8 +153,6 @@ function updatePlayers()
                 player.vx = player.vx
             end
             
-            -- prevent players from falling off the edge of the map
-            player.x = min(1024-8, player.x)
 
             flags = get_tile_flags(player.x, new_y, player.width, 1)
             if not has_flag(flags, 8) then
@@ -155,6 +187,8 @@ function updatePlayers()
                 player.vy = player.vy + GRAVITY
                 player.vy = min(player.vy, maxFallVelocity)
             end
+            ]]
+
             for _, respawn in ipairs(activeBirdList) do
                 if check_bound_collision(player, respawn.bird) then
                     -- Handle collision

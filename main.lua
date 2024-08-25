@@ -40,7 +40,7 @@ function _update()
     local current_time = time()  -- Get the current time
     delta_time = current_time - last_time  -- Calculate delta time
     last_time = current_time  
-
+    updateLines(camera_x)
     if gameStarted and gameOver == false then
         local keyInput = ""
         --testh()
@@ -112,7 +112,7 @@ function _draw()
 
         --loadChunksIntoView(camera_x) :(
         if gameStarted then
-            map(0, 0, 0, 0, 128, 16)
+            --map(0, 0, 0, 0, 128, 16)
             rectfill(camera_x, 0, camera_x +  32, 8, 0)
             print("Score " .. score, camera_x, 0, 7)
         else
