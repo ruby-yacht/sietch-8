@@ -110,8 +110,6 @@ function updatePlayers()
     for key, player in pairs(players) do
         if player.disabled == false then
 
-            
-
             -- Calculate potential new positions
             local new_x = player.x + player.vx
             local new_y = player.y + player.vy
@@ -125,13 +123,6 @@ function updatePlayers()
                 player.vx = player.vx
             end
 
-            
-            -- prevent players from falling off the edge of the map
-            player.x = min(1024-8, player.x)
-
-            -- prevent players from passing camera
-            player.x = min(camera_x+120, player.x)
-            
             flags = get_tile_flags(player.x, new_y, player.width, 1)
             if not has_flag(flags, 8) then
                 player.y = new_y
@@ -165,13 +156,20 @@ function updatePlayers()
                 player.vy = player.vy + GRAVITY
                 player.vy = min(player.vy, maxFallVelocity)
             end
+
             for _, respawn in ipairs(activeBirdList) do
                 if check_bound_collision(player, respawn.bird) then
                     -- Handle collision
                     --printh("Collision detected!")
                     respawnPlayer(respawn)
                 end
-            end            
+            end   
+            
+            -- prevent players from falling off the edge of the map
+            player.x = min(1024-8, player.x)
+
+            -- prevent players from passing camera
+            player.x = min(camera_x+120, player.x)
         end
     end
 end
