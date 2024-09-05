@@ -20,7 +20,7 @@ local posy = 8
 local xOffset = 0
 local row = 1
 -- solid tiles in sprite-sheet
-solid_tiles = {2, 3, 4, 27, 28, 29, 31, 11}
+solid_tiles = {2, 3, 4, 31, 11}
 
 -- lethal tiles in sprite-sheet
 lethal_tiles = {29}
