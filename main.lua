@@ -192,8 +192,8 @@ function draw_winners(x, y)
     for i = 1, #win_order do
         
         xOffset = leftCounter * 32
-        spr(win_order[i][1], x + xOffset, current_y)
-        print(tostr(flr(tonum(win_order[i][2]) * 100) / 100)..indent.."\n", x + 12 + xOffset, current_y, 10)
+        spr(win_order[i][1], x + 12 + xOffset, current_y)
+        print(tostr(i)..indent.."\n", x + 4 + xOffset, current_y, 10)
         if leftCounter == 3 then
             current_y = current_y + line_height
         end
