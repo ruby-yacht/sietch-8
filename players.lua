@@ -110,22 +110,28 @@ function updatePlayers()
     for key, player in pairs(players) do
         if player.disabled == false then
 
+            
+
             -- Calculate potential new positions
             local new_x = player.x + player.vx
             local new_y = player.y + player.vy
 
-            -- Check collisions with solid tiles
 
+            -- Check collisions with solid tiles
             local flags = get_tile_flags(new_x, player.y, player.width, player.height)
             if not has_flag(flags, 8) then
                 player.x = new_x
             else
                 player.vx = player.vx
             end
+
             
             -- prevent players from falling off the edge of the map
             player.x = min(1024-8, player.x)
 
+            -- prevent players from passing camera
+            player.x = min(camera_x+120, player.x)
+            
             flags = get_tile_flags(player.x, new_y, player.width, 1)
             if not has_flag(flags, 8) then
                 player.y = new_y
