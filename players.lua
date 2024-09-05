@@ -11,7 +11,7 @@ local maxPlayers = 32
 local maxFallVelocity = 10
 local respawnQueue = Queue.new()
 local activeBirdList = {}
-local respawnTimer = timer(2)
+local respawnTimer = nil
 disabledPlayerCount = 0
 
 -- start screen variables
@@ -95,6 +95,9 @@ function initPlayers()
 
         -- exit player selection and start the game
         if keyInput == "\32" and get_player_count() > 0 then 
+            local timeDelay = min(10, 2 + ((1-(playerCount/32)) * 10))
+            printh(timeDelay)
+            respawnTimer = timer(timeDelay)
             return true
         end  
 
