@@ -13,7 +13,7 @@ local timeUntilRestart = 2
 local debug = false
 local victory = false
 local win_order = {}
-local start_time = 0
+start_time = 0
 
 poke(0x5F2D, 0x1) -- enable keyboard input
 
@@ -75,8 +75,8 @@ function _update()
                     distanceThresholdToScore = distanceThresholdToScore + 32
                 end
             else
-                printh("victory status: "..tostr(victory).."\n")
-                printh("sum1 victorious")
+                --printh("victory status: "..tostr(victory).."\n")
+                --printh("sum1 victorious")
             end
         end
        
@@ -133,32 +133,52 @@ end
 
 
 function win_trigger(winner)
-    if playerCount == playerWonCount then
+    add(win_order, {winner, time() - start_time})
+    if playerCount - disabledPlayerCount == playerWonCount then
         victory = true
+        appendLosersToWinOrder()
     end
-    win_order[#win_order + 1] = {winner, time() - start_time}
-
 end
 
-function sort_by_value(tbl)
-    local sorted_pairs = {}
-    for i = 1, #tbl do
-        for k, v in pairs(tbl[i]) do
-            sorted_pairs[#sorted_pairs + 1] = {tbl[i][1], tbl[i][2]}
+function appendLosersToWinOrder()
+    local lose_order = {}
+
+    -- add disabled players to lose_order
+    for key, player in pairs(players) do
+        if player.disabled then
+            add(lose_order, {player.sprite, player.disabledCount, player.totalTimeEnabled})
         end
     end
 
-    for i = 1, #sorted_pairs+1 do
-        for j = i + 1, #sorted_pairs do
-            if tonum(sorted_pairs[i][2]) > tonum(sorted_pairs[j][2]) then
-                -- Swap
-                sorted_pairs[i], sorted_pairs[j] = sorted_pairs[j], sorted_pairs[i]
+    -- sort lost_order
+    local n = #lose_order
+    for i = 1, n - 1 do
+        for j = 1, n - i do
+            local a = lose_order[j]
+            local b = lose_order[j + 1]
+            -- Compare by disabledCount (ascending)
+            -- If disabledCount is the same, compare by totalTimeEnabled (descending)
+            if a[2] > b[2] or (a[2] == b[2] and a[3] < b[3]) then
+                -- Swap elements if necessary
+                lose_order[j], lose_order[j + 1] = lose_order[j + 1], lose_order[j]
             end
+            
         end
     end
 
-    return sorted_pairs
+    -- append lose order to win_order
+    for i = 1, #lose_order do 
+        add(win_order, lose_order[i])
+        printh("Player " .. lose_order[i][1] .. " | Disabled count: " .. lose_order[i][2] .. " | TotalTimeEnabled: " .. lose_order[i][3])
+    end
+
+    for i = 1, #win_order do 
+        printh("Player " .. win_order[i][1] .. " | score: " .. win_order[i][2])
+    end
+
 end
+
+
 
 function draw_winners(x, y)
     local indent = ""

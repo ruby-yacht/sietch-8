@@ -2,8 +2,8 @@ local GRAVITY = 0.5  -- Gravity value
 local BOUNCE_FACTOR = -8  -- Factor to bounce back after collision
 
 -- game variables
-local players = {}
-local playerCount = 0
+players = {}
+playerCount = 0
 local playerWonCount = 0
 local minBounceForce = -6
 local maxBounceForce = -10
@@ -12,7 +12,7 @@ local maxFallVelocity = 10
 local respawnQueue = Queue.new()
 local activeBirdList = {}
 local respawnTimer = timer(2)
-local disabledPlayerCount = 0
+disabledPlayerCount = 0
 
 -- start screen variables
 local posx = 0
@@ -30,6 +30,8 @@ poke(0x5F2D, 0x1) -- enable keyboard input
 
 function disablePlayer(player)
     player.disabled = true
+    player.disabledCount = player.disabledCount + 1
+    player.totalTimeEnabled = player.totalTimeEnabled + (time() - player.totalTimeEnabled)
     player.x = -8
     player.y = -8
     player.vx = 0
@@ -70,6 +72,8 @@ function initPlayers()
                 key=keyInput, 
                 sprite = sprite, 
                 disabled = false,
+                disabledCount = 0,
+                totalTimeEnabled = 0,
                 won = false
             }
             playerCount = playerCount + 1
@@ -143,7 +147,7 @@ function updatePlayers()
 
                 if has_flag(flags, 7) then
                     if not(player.won) then
-                        printh("victory!")
+                        --printh("victory!")
                         player.won = true
                         playerWonCount += 1
                         win_trigger(player.sprite)
@@ -158,7 +162,7 @@ function updatePlayers()
             for _, respawn in ipairs(activeBirdList) do
                 if check_bound_collision(player, respawn.bird) then
                     -- Handle collision
-                    printh("Collision detected!")
+                    --printh("Collision detected!")
                     respawnPlayer(respawn)
                 end
             end            
