@@ -169,12 +169,14 @@ function appendLosersToWinOrder()
     -- append lose order to win_order
     for i = 1, #lose_order do 
         add(win_order, lose_order[i])
-        printh("Player " .. lose_order[i][1] .. " | Disabled count: " .. lose_order[i][2] .. " | TotalTimeEnabled: " .. lose_order[i][3])
+        -- for debug printh("Player " .. lose_order[i][1] .. " | Disabled count: " .. lose_order[i][2] .. " | TotalTimeEnabled: " .. lose_order[i][3])
     end
 
-    for i = 1, #win_order do 
-        printh("Player " .. win_order[i][1] .. " | score: " .. win_order[i][2])
-    end
+    --[[ for debug
+        for i = 1, #win_order do 
+            printh("Player " .. win_order[i][1] .. " | score: " .. win_order[i][2])
+        end
+    ]]
 
 end
 

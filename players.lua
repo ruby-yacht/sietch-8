@@ -106,14 +106,12 @@ end
 
 -- apply "physics" to all players
 function updatePlayers() 
-    
     for key, player in pairs(players) do
         if player.disabled == false then
 
             -- Calculate potential new positions
             local new_x = player.x + player.vx
             local new_y = player.y + player.vy
-
 
             -- Check collisions with solid tiles
             local flags = get_tile_flags(new_x, player.y, player.width, player.height)
