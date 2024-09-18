@@ -25,6 +25,7 @@ function _init()
     last_time = time()
     victory = false
     start_time = time()
+    initLines()
 end
 
 function _update()
@@ -37,6 +38,7 @@ function _update()
             
             local keyInput = ""
             updatePlayers()
+            updateLines(camera_x)
             update_respawns()
             checkForOutOfBounds(camera_x - 16)
             gameOver = (get_disabled_count() == get_player_count())
@@ -82,14 +84,13 @@ function _draw()
         
     else
         cls()
-        map(0, 0, 0, 0, 128, 16)
+        drawLines()
         drawPlayers(gameStarted)
         drawRespawnBirds()
         camera(camera_x, camera_y)
 
         if gameStarted then
-            map(0, 0, 0, 0, 128, 16)
-            rectfill(camera_x, 0, camera_x +  32, 8, 0)
+
         else
             rectfill(0, 0, 64, 8, 0)
             print("press any key to add a player", 0, 0, 7)
