@@ -39,58 +39,50 @@ function _update()
     delta_time = current_time - last_time  -- Calculate delta time
     last_time = current_time  
 
-    if gameStarted and gameOver == false then
-        local keyInput = ""
-        --testh()
-        if(debug) then
-            DEBUG_updatePlayers()
-        else
+    if gameStarted then
+        if not gameOver then
+            
+            local keyInput = ""
             updatePlayers()
-        end
-        update_respawns()
-        checkForOutOfBounds(camera_x-16)
-        gameOver = (get_disabled_count() == get_player_count())
+            update_respawns()
+            checkForOutOfBounds(camera_x - 16)
+            gameOver = (get_disabled_count() == get_player_count())
 
-        while stat(30) do
-            keyInput = stat(31)
-            bouncePlayer(keyInput)       
-        end
+            -- Process key input
+            while stat(30) do
+                keyInput = stat(31)
+                bouncePlayer(keyInput)       
+            end
 
-        if victory then
-            timeUntilCameraMoves = 10
-        end
+            -- Handle victory conditions
+            if victory then
+                timeUntilCameraMoves = 10
+            end
 
-        if timeUntilCameraMoves > 0 and victory == false then
-            timeUntilCameraMoves -= delta_time
-        else
-            if victory==false then
-                if camera_x >= 896 then
-                    camera_x = 896
-                else
-                    camera_x = camera_x + .5
-                end            
-
-                if camera_x >= distanceThresholdToScore then
-                    score = score + distanceScore
-                    distanceThresholdToScore = distanceThresholdToScore + 32
-                end
+            if timeUntilCameraMoves > 0 then
+                timeUntilCameraMoves -= delta_time
             else
-                --printh("victory status: "..tostr(victory).."\n")
-                --printh("sum1 victorious")
+                if not victory then
+                    -- Update camera position and score
+                    camera_x = min(camera_x + 0.5, 896)
+
+                    if camera_x >= distanceThresholdToScore then
+                        score += distanceScore
+                        distanceThresholdToScore += 32
+                    end
+                end
+            end
+        else
+            -- Handle game over state
+            if timeUntilRestart > 0 then
+                timeUntilRestart -= delta_time
+            else
+                timeUntilRestart = 2
+                restart()
             end
         end
-       
-    elseif gameOver then
-        if timeUntilRestart > 0 then
-            timeUntilRestart -= delta_time
-        else
-            timeUntilRestart = 2
-            restart()
-            --printh("post-restart vals: \n")
-            --print_global_vals()            
-        end
-        --nothing
-    else -- character select screen
+    else
+        -- Handle character select screen
         gameStarted = initPlayers()
     end
 end
@@ -111,7 +103,6 @@ function _draw()
         if gameStarted then
             map(0, 0, 0, 0, 128, 16)
             rectfill(camera_x, 0, camera_x +  32, 8, 0)
-            print("Score " .. score, camera_x, 0, 7)
         else
             rectfill(0, 0, 64, 8, 0)
             print("Press any key to add a player", 0, 0, 7)
