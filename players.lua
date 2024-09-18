@@ -249,10 +249,15 @@ end
 function resetPlayers()
     players = {}
     playerCount = 0
-    minBounceForce = -6
-    maxBounceForce = -10
-    maxPlayers = 32
-    maxFallVelocity = 10
+    playerWonCount = 0
+    respawnQueue = Queue.new()
+    activeBirdList = {}
+    respawnTimer = nil
+    disabledPlayerCount = 0
+    posx = 0
+    posy = 8
+    xOffset = 0
+    row = 1
 end
 
 function DEBUG_updatePlayers()
