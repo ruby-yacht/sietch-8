@@ -12,7 +12,7 @@ local maxPlayers = 32
 local maxFallVelocity = 5
 local respawnQueue = Queue.new()
 local activeBirdList = {}
-local respawnTimer = timer(2)
+local respawnTimer = nil
 local disabledPlayerCount = 0
 
 -- start screen variables
@@ -21,7 +21,7 @@ local posy = 8
 local xOffset = 0
 local row = 1
 -- solid tiles in sprite-sheet
-solid_tiles = {2, 3, 4, 27, 28, 29, 31, 11}
+solid_tiles = {2, 3, 4, 31, 11}
 
 -- lethal tiles in sprite-sheet
 lethal_tiles = {29}
@@ -92,6 +92,8 @@ function initPlayers()
 
         -- exit player selection and start the game
         if keyInput == "\32" and get_player_count() > 0 then 
+            local timeDelay = min(10, 2 + ((1-(playerCount/32)) * 10))
+            respawnTimer = timer(timeDelay)
             return true
         end  
 

@@ -94,16 +94,7 @@ function updateLines(camera_x)
         activeLines = createRandomLine(activeLines)
         activeLines = shiftHeadLineToEnd(activeLines)
         nextPositionToCreateNewLine = activeLines.start_x + activeLines.length
-        --chunkChain = getNextChunk(chunkChain) -- load the new chunk
-        --chunkChain.pos_x = chunkChain.pos_x + (128 * 3) -- move chunk
-        --chunkChain = shiftHeadChunkToEnd(chunkChain) -- shift first chunk to the end of the list
-        --nextPositionToCreateNewChunk = nextPositionToCreateNewChunk + 128
-        --printh("swap")
-        -- printList(chunkChain)
     end
-    
-    --local headChunk = chunkChain -- get the first chunk in list
-
 end
 
 function drawLines()
@@ -112,9 +103,6 @@ function drawLines()
 
         line(l.start_x, l.height, l.start_x + l.length, l.height)
         l = l.next
-        --loadChunkData(headChunk)
-       -- map(headChunk.index_x * 16, headChunk.index_y * 16, headChunk.pos_x, 0, 16, 16)
-       -- headChunk = headChunk.next
     end
 
 end

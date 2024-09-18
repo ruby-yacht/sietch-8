@@ -64,7 +64,8 @@ function _update()
             else
                 if not victory then
                     -- Update camera position 
-                    camera_x = min(camera_x + 0.5, 896)
+                    camera_x = camera_x + 0.5
+                    camera(camera_x, camera_y)
                 end
             end
         else
@@ -83,6 +84,7 @@ function _update()
 end
 
 function _draw()
+    
     if victory then
         cls(12)
         draw_winners(camera_x, camera_y)
@@ -93,10 +95,8 @@ function _draw()
         drawPlayers(gameStarted)
         drawRespawnBirds()
         
-
         if gameStarted then
-            --map(0, 0, 0, 0, 128, 16)
-            rectfill(camera_x, 0, camera_x +  32, 8, 0)
+            --rectfill(camera_x, 0, camera_x +  32, 8, 0) -- covers screen..why?
         else
             rectfill(0, 0, 64, 8, 0)
             print("press any key to add a player", 0, 0, 7)
