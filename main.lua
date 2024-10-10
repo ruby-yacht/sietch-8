@@ -1,4 +1,3 @@
-
 gameStarted = false
 gameOver = false
 camera_x = 0
@@ -6,9 +5,6 @@ camera_y = 0
 local timeUntilCameraMoves = 1.5
 last_time = 0
 delta_time = 0
-local score = 0
-local distanceScore = 10
-local distanceThresholdToScore = 32
 local timeUntilRestart = 2
 local debug = false
 local victory = false
@@ -24,9 +20,6 @@ function _init()
     timeUntilCameraMoves = 1.5
     last_time = 0
     delta_time = 0
-    score = 0
-    distanceScore = 10
-    distanceThresholdToScore = 32
     timeUntilRestart = 2
     --createChunks()
     last_time = time()
@@ -39,58 +32,45 @@ function _update()
     delta_time = current_time - last_time  -- Calculate delta time
     last_time = current_time  
 
-    if gameStarted and gameOver == false then
-        local keyInput = ""
-        --testh()
-        if(debug) then
-            DEBUG_updatePlayers()
-        else
+    if gameStarted then
+        if not gameOver then
+            
+            local keyInput = ""
             updatePlayers()
-        end
-        update_respawns()
-        checkForOutOfBounds(camera_x-16)
-        gameOver = (get_disabled_count() == get_player_count())
+            update_respawns()
+            checkForOutOfBounds(camera_x - 16)
+            gameOver = (get_disabled_count() == get_player_count())
 
-        while stat(30) do
-            keyInput = stat(31)
-            bouncePlayer(keyInput)       
-        end
+            -- Process key input
+            while stat(30) do
+                keyInput = stat(31)
+                bouncePlayer(keyInput)       
+            end
 
-        if victory then
-            timeUntilCameraMoves = 10
-        end
+            -- Handle victory conditions
+            if victory then
+                timeUntilCameraMoves = 10
+            end
 
-        if timeUntilCameraMoves > 0 and victory == false then
-            timeUntilCameraMoves -= delta_time
-        else
-            if victory==false then
-                if camera_x >= 896 then
-                    camera_x = 896
-                else
-                    camera_x = camera_x + .5
-                end            
-
-                if camera_x >= distanceThresholdToScore then
-                    score = score + distanceScore
-                    distanceThresholdToScore = distanceThresholdToScore + 32
-                end
+            if timeUntilCameraMoves > 0 then
+                timeUntilCameraMoves -= delta_time
             else
-                --printh("victory status: "..tostr(victory).."\n")
-                --printh("sum1 victorious")
+                if not victory then
+                    -- Update camera position 
+                    camera_x = min(camera_x + 0.5, 896)
+                end
+            end
+        else
+            -- Handle game over state
+            if timeUntilRestart > 0 then
+                timeUntilRestart -= delta_time
+            else
+                timeUntilRestart = 2
+                restart()
             end
         end
-       
-    elseif gameOver then
-        if timeUntilRestart > 0 then
-            timeUntilRestart -= delta_time
-        else
-            timeUntilRestart = 2
-            restart()
-            --printh("post-restart vals: \n")
-            --print_global_vals()            
-        end
-        --nothing
-    else -- character select screen
+    else
+        -- Handle character select screen
         gameStarted = initPlayers()
     end
 end
@@ -107,14 +87,12 @@ function _draw()
         drawRespawnBirds()
         camera(camera_x, camera_y)
 
-        --loadChunksIntoView(camera_x) :(
         if gameStarted then
             map(0, 0, 0, 0, 128, 16)
             rectfill(camera_x, 0, camera_x +  32, 8, 0)
-            print("Score " .. score, camera_x, 0, 7)
         else
             rectfill(0, 0, 64, 8, 0)
-            print("Press any key to add a player", 0, 0, 7)
+            print("press any key to add a player", 0, 0, 7)
             print("\^w\^thop" .. get_player_count(), 46,56)
         end
 
@@ -124,9 +102,9 @@ function _draw()
         end
 
         if (debug) then
-            print("CPU usage: " .. stat(1) .. "%", camera_x,8)
-            print("Memery usage: " .. stat(0) .. " bytes", camera_x,16)
-            print("Frame rate: " .. stat(7), camera_x,24)
+            print("cpu usage: " .. stat(1) .. "%", camera_x,8)
+            print("memory usage: " .. stat(0) .. " bytes", camera_x,16)
+            print("frame rate: " .. stat(7), camera_x,24)
         end  
     end      
 end
@@ -171,12 +149,6 @@ function appendLosersToWinOrder()
         add(win_order, lose_order[i])
         -- for debug printh("Player " .. lose_order[i][1] .. " | Disabled count: " .. lose_order[i][2] .. " | TotalTimeEnabled: " .. lose_order[i][3])
     end
-
-    --[[ for debug
-        for i = 1, #win_order do 
-            printh("Player " .. win_order[i][1] .. " | score: " .. win_order[i][2])
-        end
-    ]]
 
 end
 
@@ -227,9 +199,6 @@ function restart()
     camera_y = 0
     timeUntilCameraMoves = 1.5
     delta_time = 0
-    score = 0
-    distanceScore = 10
-    distanceThresholdToScore = 32
     cls()
     resetPlayers()
     last_time = time()
@@ -245,9 +214,5 @@ function print_global_vals()
     printh ("timeUntilCameraMoves: "..tostr(timeUntilCameraMoves).."\n")
     printh ("last_time: "..tostr(last_time).."\n")
     printh ("delta_time: "..tostr(delta_time).."\n")
-    printh ("score: "..tostr(score).."\n")
-    printh ("distanceScore: "..tostr(distanceScore).."\n")
-    printh ("distanceThresholdToScore: "..tostr(distanceThresholdToScore).."\n")
-    printh ("distanceScore: "..tostr(distanceScore).."\n") 
     printh ("win_order: \n"..print_win_table().."\n")
 end
