@@ -4,6 +4,7 @@ local BOUNCE_FACTOR = -8  -- Factor to bounce back after collision
 -- game variables
 local players = {}
 local playerCount = 0
+local playerWonCount = 0
 local minBounceForce = -6
 local maxBounceForce = -10
 local maxPlayers = 32
@@ -55,9 +56,22 @@ function initPlayers()
 
         if not (keyInput == "\32") and not (keyInput == "\13") and not (keyInput == "\112") and not players[keyInput] and currentPlayerCount <= 32 then 
             local sprite = sprites[playerCount % #sprites + 1]
-            players[keyInput] = {x = posx, y = posy, width = 8, height = 8, boundsOffsetX = 0, boundsOffsetY = 0, vx = 0, 
-            vy = 0, onGround = false, bounce_force = minBounceForce, key=keyInput, 
-            sprite = sprite, disabled = false}
+            players[keyInput] = {
+                x = posx, 
+                y = posy, 
+                width = 8, 
+                height = 8, 
+                boundsOffsetX = 0, 
+                boundsOffsetY = 0, 
+                vx = 0, 
+                vy = 0, 
+                onGround = false, 
+                bounce_force = minBounceForce, 
+                key=keyInput, 
+                sprite = sprite, 
+                disabled = false,
+                won = false
+            }
             playerCount = playerCount + 1
 
             posx = posx + 9
@@ -123,11 +137,17 @@ function updatePlayers()
                 player.bounce_force = max(player.bounce_force - .08, maxBounceForce)
                 player.vx = 0
                 player.onGround = true
+
                 -- add debug check
                 --printh("player at\nx: "..player.x..", y: "..player.y)
 
                 if has_flag(flags, 7) then
-                    printh("victory!")
+                    if not(player.won) then
+                        printh("victory!")
+                        player.won = true
+                        playerWonCount += 1
+                        win_trigger(player.sprite)
+                    end
                 end
             else
                 player.onGround = false
@@ -135,18 +155,49 @@ function updatePlayers()
                 player.vy = player.vy + GRAVITY
                 player.vy = min(player.vy, maxFallVelocity)
             end
-
-            
             for _, respawn in ipairs(activeBirdList) do
                 if check_bound_collision(player, respawn.bird) then
                     -- Handle collision
                     printh("Collision detected!")
                     respawnPlayer(respawn)
                 end
+            end            
+        end
+    end
+end
+
+
+
+function has_flag(flags, flag)
+    for _, f in ipairs(flags) do 
+        if f == flag then
+            return true
+        end
+    end
+    return false
+end
+
+
+function get_tile_flags(x, y, width, height)
+    local flags = {}
+    for dx = 0, width - 1 do
+        for dy = 0, height - 1 do
+
+            --Convert pixel coordinates to tile coordinates
+            local tile_x = flr((x + dx) / 8)
+            local tile_y = flr((y + dy) / 8)
+
+            if is_solid_tile(tile_x,tile_y) then
+                add_unique(flags, 8) -- 8 flag is collision
             end
 
-        
+            for flag = 0, 7 do
+                local flagFound = fget(mget(tile_x, tile_y), flag)
+                if flagFound then
+                    add_unique(flags, flag)
             
+                end
+            end    
         end
     end
 end
@@ -154,7 +205,7 @@ end
 -- look up key associated with player and bounce them
 function bouncePlayer(key)
     local player = players[key]
-    if not (player == nil) and player.onGround then
+    if not (player == nil) and player.onGround and not(player.won) then
         player.vy = player.bounce_force
         player.vx = 1
         player.bounce_force = minBounceForce
@@ -168,9 +219,7 @@ function resetPlayers()
     maxBounceForce = -10
     maxPlayers = 32
     maxFallVelocity = 10
-
-
-end 
+end
 
 function DEBUG_updatePlayers()
     for key, player in pairs(players) do
