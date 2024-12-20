@@ -33,6 +33,7 @@ function _update()
     last_time = current_time  
 
     if gameStarted then
+	music(0)
         if not gameOver then
             
             local keyInput = ""
