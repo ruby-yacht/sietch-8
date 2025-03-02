@@ -37,7 +37,7 @@ TILE = {
 }
 
 groundlevel = 12 -- relative to tiles, not pixels
-
+player = {} -- for testing
 
 function _init()
 
@@ -70,10 +70,6 @@ function _init()
     -- generate ground by removing ground tiles.
     for y = 1, chunk_y_size do
         for x = 1, chunk_x_size do      
-
-
-
-
             local h = get_cell_height_at_(x)  -- Normalize x to [0, 1] (remember to explain why dividing by chunk_x_size fixes sin output)
             --h = 2 * sin( ((x-1) / chunk_x_size) * 2)
             if y - groundlevel < h then
@@ -82,6 +78,25 @@ function _init()
             
         end
     end
+
+    player = {
+        x = 72, 
+        y = 80, 
+        width = 8, 
+        height = 8, 
+        boundsOffsetX = 0, 
+        boundsOffsetY = 0, 
+        vx = 0, 
+        vy = 0, 
+        onGround = false, 
+        bounce_force = minBounceForce, 
+        key=70, 
+        sprite = 70, 
+        disabled = false,
+        disabledCount = 0,
+        totalTimeEnabled = 0,
+        won = false
+    }
     --printh("------------------------")
 end
 
@@ -114,23 +129,63 @@ end
 function _update()
     camera_x += .5
     camera_x = min(camera_x, (chunk_x_size-16) * 8)
+
+
+    -- Update player position based on movement
+    player.x += player.vx
+    player.y += player.vy
+    
+    -- Check for collisions
+    local checked_position = check_collision(player)
+    
+    -- Apply gravity
+    --player.vy += .2
+
+
 end
 
 function _draw()
     cls()
-    camera(camera_x, camera_y)
+    --camera(camera_x, camera_y)
+
     for y = 1, chunk_y_size do
         for x = 1, chunk_x_size do     
             local tile = get_tile(x,y).tile
             if tile > 0 then
                 spr(tile, (x - 1) * 8, (y - 1) * 8)
+                print((y - 1) * 8, (x - 1) * 8, (y - 1) * 8)
             end
         end
     end
 
+    spr(player.sprite, player.x, player.y)
+
 end
 
 function get_tile(x, y)
+    
     local index = (y - 1) * chunk_x_size + x
     return levelgen[index]
+end
+
+function get_tile_at_pos(x, y)
+    return get_tile(flr(x / 8) + 1, flr(y / 8) + 1)
+end
+
+
+function check_collision(p)
+    local top_left_point = {x = p.x, y = p.y}
+    local top_right_point = {x = p.x + p.width, y = p.y}
+    local bottom_left_point = {x=p.x, y=p.y+p.height}
+    local bottom_right_point = {x=p.x + p.width, y=p.y+p.height}
+
+    local bottom_tile_left = get_tile_at_pos(bottom_left_point.x, bottom_left_point.y + 1)
+    local bottom_tile_right = get_tile_at_pos(bottom_right_point.x, bottom_right_point.y + 1)
+
+    if bottom_tile_left.tile ~= TILE.NONE or bottom_tile_right.tile ~= TILE.NONE then
+        --printh("ground")
+    end
+
+    --printh("----")
+
 end
