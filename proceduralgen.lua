@@ -1,3 +1,5 @@
+poke(0x5F2D, 0x1) -- enable keyboard input
+
 levelgen = {}
 
 BIOME_DIST = {
@@ -50,19 +52,19 @@ function _init()
             
 
             if x <= BIOME_DIST.GRASS then -- MAKE THIS BETTER
-                levelgen[index] = {tile = TILE.GRASS}
+                levelgen[index] = {x = x, y = y, tile = TILE.GRASS}
             elseif x <= BIOME_DIST.DESERT then
-                levelgen[index] = {tile = TILE.SAND_1}
+                levelgen[index] = {x = x, y = y, tile = TILE.SAND_1}
             elseif x <= BIOME_DIST.MOUNTAIN then
-                levelgen[index] = {tile = TILE.MOUNTAIN_1}
+                levelgen[index] = {x = x, y = y, tile = TILE.MOUNTAIN_1}
             elseif x <= BIOME_DIST.SNOW then
-                levelgen[index] = {tile = TILE.SNOW_2}
+                levelgen[index] = {x = x, y = y, tile = TILE.SNOW_2}
             elseif x <= BIOME_DIST.ORELAND then
-                levelgen[index] = {tile = TILE.ORELAND_1}
+                levelgen[index] = {x = x, y = y, tile = TILE.ORELAND_1}
             elseif x <= BIOME_DIST.HELL then
-                levelgen[index] = {tile = TILE.HELL_2}
+                levelgen[index] = {x = x, y = y, tile = TILE.HELL_2}
             else
-                levelgen[index] = {tile = TILE.GROUND}
+                levelgen[index] = {x = x, y = y, tile = TILE.GROUND}
             end  
         end
     end
@@ -80,8 +82,8 @@ function _init()
     end
 
     player = {
-        x = 72, 
-        y = 80, 
+        x = 20, 
+        y = 50, 
         width = 8, 
         height = 8, 
         boundsOffsetX = 0, 
@@ -130,62 +132,99 @@ function _update()
     camera_x += .5
     camera_x = min(camera_x, (chunk_x_size-16) * 8)
 
+    -- Process key input
+    while player.onGround and stat(30) do
+        keyInput = stat(31)
+        player.vx = 1
+        player.vy = -3
+    end
 
-    -- Update player position based on movement
-    player.x += player.vx
-    player.y += player.vy
-    
-    -- Check for collisions
-    local checked_position = check_collision(player)
-    
     -- Apply gravity
-    --player.vy += .2
+    if player.onGround == false then
+        player.vy += .2
+    else
+        if player.vy > 0 then -- if just landed
+            player.vx = 0
+        end
+    end
+    
+    new_pos_x = player.x + player.vx
+    new_pos_y = player.y + player.vy
+    --printh("x " .. new_pos_x .. " y " .. new_pos_y .. " | vx " .. player.vx .. " vy " .. player.vy)
 
+    -- Check for collisions
+    local checked_position = check_collision(player, new_pos_x, new_pos_y)
+    player.onGround = checked_position.onGround
+    -- Update player position based on movement
+    player.x = checked_position.x
+    player.y = checked_position.y
 
 end
 
 function _draw()
     cls()
-    --camera(camera_x, camera_y)
+    camera(camera_x, camera_y)
 
     for y = 1, chunk_y_size do
         for x = 1, chunk_x_size do     
             local tile = get_tile(x,y).tile
             if tile > 0 then
+                
                 spr(tile, (x - 1) * 8, (y - 1) * 8)
-                print((y - 1) * 8, (x - 1) * 8, (y - 1) * 8)
+                --print((y - 1) * 8, (x - 1) * 8, (y - 1) * 8)
+                --print(y, (x - 1) * 8, (y - 1) * 8)
             end
         end
     end
 
+    spr(99, new_pos_x, new_pos_y)
     spr(player.sprite, player.x, player.y)
 
 end
 
 function get_tile(x, y)
-    
-    local index = (y - 1) * chunk_x_size + x
-    return levelgen[index]
+    if x <= 0 or x > chunk_x_size or y <= 0 or y > chunk_y_size then
+        --printh("(" .. x .. "," .. y .. ") tile index is out of bounds")
+        return {tile = -1}
+    else
+        local index = (y - 1) * chunk_x_size + x
+        return levelgen[index]
+    end
 end
 
-function get_tile_at_pos(x, y)
+function get_tile_at_pos(x, y)   
     return get_tile(flr(x / 8) + 1, flr(y / 8) + 1)
 end
 
 
-function check_collision(p)
-    local top_left_point = {x = p.x, y = p.y}
-    local top_right_point = {x = p.x + p.width, y = p.y}
-    local bottom_left_point = {x=p.x, y=p.y+p.height}
-    local bottom_right_point = {x=p.x + p.width, y=p.y+p.height}
+function check_collision(p, new_x, new_y)
+    local collision_data = {x = new_x, y = new_y, onGround = false}
+    --local dumb = 0
+    -- four corners of the hit box
+    local top_left_point = {x = new_x, y = new_y}
+    local top_right_point = {x = new_x + p.width, y = new_y}
+    local bottom_left_point = {x=new_x, y=new_y+p.height}
+    local bottom_right_point = {x=new_x + p.width, y=new_y+p.height}
 
-    local bottom_tile_left = get_tile_at_pos(bottom_left_point.x, bottom_left_point.y + 1)
-    local bottom_tile_right = get_tile_at_pos(bottom_right_point.x, bottom_right_point.y + 1)
+    -- check ground tiles
+    local bottom_tile_at_left_point = get_tile_at_pos(bottom_left_point.x, bottom_left_point.y)
+    local bottom_tile_at_right_point = get_tile_at_pos(bottom_right_point.x, bottom_right_point.y)
 
-    if bottom_tile_left.tile ~= TILE.NONE or bottom_tile_right.tile ~= TILE.NONE then
-        --printh("ground")
+    if bottom_tile_at_left_point.tile ~= TILE.NONE or bottom_tile_at_right_point.tile ~= TILE.NONE then
+        collision_data.onGround = true
+        --dumb = 1
+
+        -- use the best point or the left one
+        if  bottom_tile_at_left_point.tile == -1 and bottom_tile_at_right_point.tile ~= -1 then
+            collision_data.y = bottom_tile_at_right_point.y*8-8 - p.height
+        elseif (bottom_tile_at_left_point.tile ~= -1 and bottom_tile_at_right_point.tile == -1) or (bottom_tile_at_left_point.tile ~= -1 and bottom_tile_at_right_point.tile ~= -1) then
+            collision_data.y = bottom_tile_at_left_point.y*8-8 - p.height
+        end
+        
     end
+    
+    --printh("Bottom_left is at " .. bottom_left_point.y .. " so I see " .. bottom_tile_at_left_point.y .. " at " .. bottom_tile_at_left_point.y*8-8 .. "px. onGround = " .. dumb)
 
-    --printh("----")
+    return collision_data
 
 end
