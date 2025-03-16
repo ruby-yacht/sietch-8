@@ -2,16 +2,17 @@ poke(0x5F2D, 0x1) -- enable keyboard input
 
 levelgen = {}
 
+biome_length = 16
 BIOME_DIST = {
-    GRASS = 16,
-    DESERT = 32,
-    MOUNTAIN = 48,
-    SNOW = 64,
-    ORELAND = 80,
-    HELL = 96
+    GRASS = 0,
+    DESERT = 0,
+    MOUNTAIN = 0,
+    SNOW = 0,
+    ORELAND = 0,
+    HELL = 0
 }
 
-map_x_size = BIOME_DIST.HELL
+map_x_size = -1
 map_y_size = 16
 camera_x = 0
 camera_y = 0
@@ -40,23 +41,30 @@ TILE = {
 
 groundlevel = 11 -- relative to tiles, not pixels
 player = {} -- for testing
+testmode = false
+
+
+
 
 function _init()
+
+    set_biome_distances()
+
     -- Fill all cells with ground
     for x = 0, map_x_size-1 do
         levelgen[x] = {}
         for y = 0, map_y_size-1 do         
-            if x <= BIOME_DIST.GRASS then -- MAKE THIS BETTER
+            if x < BIOME_DIST.GRASS then
                 levelgen[x][y] = {x = x, y = y, tile = TILE.GRASS}
-            elseif x <= BIOME_DIST.DESERT then
+            elseif x < BIOME_DIST.DESERT then
                 levelgen[x][y] = {x = x, y = y, tile = TILE.SAND_1}
-            elseif x <= BIOME_DIST.MOUNTAIN then
+            elseif x < BIOME_DIST.MOUNTAIN then
                 levelgen[x][y] = {x = x, y = y, tile = TILE.MOUNTAIN_1}
-            elseif x <= BIOME_DIST.SNOW then
+            elseif x < BIOME_DIST.SNOW then
                 levelgen[x][y] = {x = x, y = y, tile = TILE.SNOW_2}
-            elseif x <= BIOME_DIST.ORELAND then
+            elseif x < BIOME_DIST.ORELAND then
                 levelgen[x][y] = {x = x, y = y, tile = TILE.ORELAND_1}
-            elseif x <= BIOME_DIST.HELL then
+            elseif x < BIOME_DIST.HELL then
                 levelgen[x][y] = {x = x, y = y, tile = TILE.HELL_2}
             else
                 levelgen[x][y] = {x = x, y = y, tile = TILE.GROUND}
@@ -65,6 +73,7 @@ function _init()
     end
 
     -- generate ground by removing ground tiles.
+    -- Q: should I store the surface in an array? Then know which tiles I can spawn or modify on the surface.
     for x = 0, map_x_size-1 do
         for y = 0, map_y_size-1 do      
             local h = get_cell_height_at_(x)  -- Normalize x to [0, 1] (remember to explain why dividing by chunk_x_size fixes sin output)
@@ -75,6 +84,8 @@ function _init()
             
         end
     end
+
+    draw_holes()
 
     player = {
         x = 20, 
@@ -95,6 +106,26 @@ function _init()
         won = false
     }
     --printh("------------------------")
+end
+
+function set_biome_distances()
+
+    local cumulative_dist = 0
+
+    BIOME_DIST.GRASS = biome_length + cumulative_dist
+    cumulative_dist = BIOME_DIST.GRASS
+    BIOME_DIST.DESERT = biome_length + cumulative_dist
+    cumulative_dist = BIOME_DIST.DESERT
+    BIOME_DIST.MOUNTAIN = biome_length + cumulative_dist
+    cumulative_dist = BIOME_DIST.MOUNTAIN
+    BIOME_DIST.SNOW = biome_length + cumulative_dist
+    cumulative_dist = BIOME_DIST.SNOW
+    BIOME_DIST.ORELAND = biome_length + cumulative_dist
+    cumulative_dist = BIOME_DIST.ORELAND
+    BIOME_DIST.HELL = biome_length + cumulative_dist
+    cumulative_dist = BIOME_DIST.HELL
+
+    map_x_size = BIOME_DIST.HELL
 end
 
 function get_cell_height_at_(x)
@@ -123,10 +154,51 @@ function biome_mountain_height_at_(x) -- raise ground level?
     return sin( ((x-1) / 16)) + 4 * sin( ((x-1) / 16) * 1.5)
 end
 
-function _update()
+function draw_holes()
+    local hole_width = 3
 
-    hop_mode()
-    --test_mode()
+    -- draw holes at the end of each biome
+    for i = biome_length-hole_width, map_x_size-biome_length-hole_width, biome_length do
+        for x = i, i + hole_width - 1, 1 do
+            for y = 0, map_y_size - 1 do
+                levelgen[x][y].tile = TILE.NONE   
+            end
+        end
+    end
+
+
+    --[[
+     -- every X tiles
+    local hole_distance = 5
+    local last_hole_pos = 0
+    for i = 0, (map_x_size-1)-hole_width, 1 do
+        if i > last_hole_pos + hole_width + hole_distance then
+
+            for x = i, i + hole_width, 1 do
+                for y = 0, map_y_size-1, 1 do
+                    printh( x .. " " .. y)
+                    levelgen[x][y].tile = TILE.NONE   
+                end
+                
+            end
+
+            last_hole_pos = i
+            i += hole_width
+
+        end
+    end
+    ]]
+
+end
+
+function _update()
+    if testmode then
+        test_mode()
+    else
+        hop_mode()
+    end
+    
+    
 end
 
 function _draw()
@@ -169,6 +241,7 @@ function get_tile_at_pos(x, y)
 end
 
 function test_mode()
+    
     camera_x = player.x - 56
     --camera_y = player.y + 64
 
@@ -191,6 +264,13 @@ function test_mode()
         player.vy += 2
      end
 
+    while stat(30) do
+        keyInput = stat(31)
+        if keyInput == "t" then
+            testmode = false
+        end        
+    end
+
      local player_new_x = player.x + player.vx
      local player_new_y = player.y + player.vy
 
@@ -206,10 +286,15 @@ function hop_mode()
     camera_x = min(camera_x, (map_x_size-16) * 8)
 
     -- Process key input
-    while player.onGround and stat(30) do
+    while stat(30) do
         keyInput = stat(31)
-        player.vx = 1
-        player.vy = -3
+        if keyInput == "t" then
+            testmode = true
+        elseif player.onGround then
+            player.vx = 1
+            player.vy = -3
+        end
+        
     end
 
     -- Apply gravity
