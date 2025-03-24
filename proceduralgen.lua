@@ -1,6 +1,7 @@
 poke(0x5F2D, 0x1) -- enable keyboard input
 
 levelgen = {}
+surface_tiles = {}
 
 biome_length = 16
 BIOME_DIST = {
@@ -13,10 +14,9 @@ BIOME_DIST = {
 }
 
 map_x_size = -1
-map_y_size = 16
-camera_x = 0
-camera_y = 0
+map_y_size = 32
 -- tile ids: air = 0; grass = 2; ground = 3; wall = 4; 
+
 TILE = {
     NONE = 0,
     GRASS = 2,
@@ -46,7 +46,7 @@ testmode = false
 
 
 
-function _init()
+function generate_terrain(yOffset)
 
     set_biome_distances()
 
@@ -55,11 +55,11 @@ function _init()
         levelgen[x] = {}
         for y = 0, map_y_size-1 do         
             if x < BIOME_DIST.GRASS then
-                levelgen[x][y] = {x = x, y = y, tile = TILE.GRASS}
+                levelgen[x][y] = {x = x, y = y, tile = TILE.GROUND}
             elseif x < BIOME_DIST.DESERT then
                 levelgen[x][y] = {x = x, y = y, tile = TILE.SAND_1}
             elseif x < BIOME_DIST.MOUNTAIN then
-                levelgen[x][y] = {x = x, y = y, tile = TILE.MOUNTAIN_1}
+                levelgen[x][y] = {x = x, y = y, tile = TILE.MOUNTAIN_2}
             elseif x < BIOME_DIST.SNOW then
                 levelgen[x][y] = {x = x, y = y, tile = TILE.SNOW_2}
             elseif x < BIOME_DIST.ORELAND then
@@ -76,7 +76,7 @@ function _init()
     -- Q: should I store the surface in an array? Then know which tiles I can spawn or modify on the surface.
     for x = 0, map_x_size-1 do
         for y = 0, map_y_size-1 do      
-            local h = get_cell_height_at_(x)  -- Normalize x to [0, 1] (remember to explain why dividing by chunk_x_size fixes sin output)
+            local h = get_cell_height_at_(x) + yOffset -- Normalize x to [0, 1] (remember to explain why dividing by chunk_x_size fixes sin output)
             --h = 2 * sin( ((x-1) / chunk_x_size) * 2)
             if y - groundlevel < h then
                 get_tile(x,y).tile = TILE.NONE
@@ -84,8 +84,40 @@ function _init()
             
         end
     end
-
+    
     draw_holes()
+
+    -- get all surface tiles. Update surface sprites if needed
+    for x = 0, map_x_size-1 do
+        for y = 1, map_y_size-1 do 
+
+            local above_tile = get_tile(x, y-1)
+            local target_tile = get_tile(x,y)
+
+            if above_tile.tile == TILE.NONE and target_tile.tile ~= TILE.NONE then
+                add(surface_tiles, target_tile)
+
+                if x < BIOME_DIST.GRASS then
+                    target_tile.tile = TILE.GRASS
+                elseif x < BIOME_DIST.DESERT then
+                    --target_tile.tile = TILE.GRASS
+                elseif x < BIOME_DIST.MOUNTAIN then
+                    target_tile.tile = TILE.MOUNTAIN_1
+                elseif x < BIOME_DIST.SNOW then
+                    --target_tile.tile = TILE.GRASS
+                elseif x < BIOME_DIST.ORELAND then
+                    --target_tile.tile = TILE.GRASS
+                elseif x < BIOME_DIST.HELL then
+                    --target_tile.tile = TILE.GRASS
+                else
+                    --target_tile.tile = TILE.GRASS
+                end
+            end
+            
+        end
+    end
+
+    printh(#surface_tiles)
 
     player = {
         x = 20, 
@@ -168,7 +200,7 @@ function draw_holes()
 
 
     --[[
-     -- every X tiles
+     -- every X tiles.
     local hole_distance = 5
     local last_hole_pos = 0
     for i = 0, (map_x_size-1)-hole_width, 1 do
@@ -194,20 +226,14 @@ end
 function _update()
     if testmode then
         test_mode()
-    else
-        hop_mode()
     end
-    
-    
 end
 
-function _draw()
-    cls()
-    camera(camera_x, camera_y)
-
+function draw_terrain()
     local visibleTilesX = flr(camera_x) + 16
     local visibleTilesY = flr(camera_y) + 16
 
+    
     for x = 0, map_x_size-1 do
         for y = 0, map_y_size-1 do     
             local tile = get_tile(x,y).tile
@@ -222,8 +248,11 @@ function _draw()
         end
     end
 
-    --spr(99, new_pos_x, new_pos_y)
-    spr(player.sprite, player.x, player.y)
+--[[    -- draw surface tiles (useful for debugging)
+    for index, tile in ipairs(surface_tiles) do
+        spr(tile.tile, tile.x * 8, tile.y * 8)
+    end
+]]
 
 end
 
@@ -318,18 +347,21 @@ function hop_mode()
 end
 
 function check_collision(new_x, new_y, x,y)
+    -- convert world positions to grid positions
     local new_x_unit = new_x / 8
     local new_y_unit = new_y / 8
-    local x_unit = player.x / 8
-    local y_unit = player.y / 8
+    local x_unit = x / 8
+    local y_unit = y / 8
     local onGround = false
 
+    -- check X axis collisions
     if get_tile(new_x_unit, y_unit).tile ~= TILE.NONE or get_tile(new_x_unit, y_unit + 0.999).tile ~= TILE.NONE then
         new_x_unit = flr(new_x_unit) + 1
     elseif get_tile(new_x_unit + 1, y_unit).tile ~= TILE.NONE or get_tile(new_x_unit + 1, y_unit + 0.999).tile ~= TILE.NONE then
         new_x_unit = flr(new_x_unit)
     end
 
+    -- check Y axis collisions
     if get_tile(x_unit, new_y_unit).tile ~= TILE.NONE or get_tile(x_unit+0.999, new_y_unit).tile ~= TILE.NONE then
         new_y_unit = flr(new_y_unit) + 1
     elseif get_tile(x_unit, new_y_unit + 1).tile ~= TILE.NONE or get_tile(x_unit+0.999, new_y_unit + 1).tile ~= TILE.NONE then
@@ -337,6 +369,7 @@ function check_collision(new_x, new_y, x,y)
         onGround = true
     end
 
+    -- convert grid positions to world positions
     new_x = new_x_unit * 8
     new_y = new_y_unit * 8
 
