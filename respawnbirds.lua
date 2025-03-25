@@ -56,8 +56,6 @@ end
 
 function draw_respawn_birds()
     for _, respawn in ipairs(activeBirdList) do
-
-        printh(respawn.bird.sprite)
         spr(respawn.bird.sprite, respawn.bird.x, respawn.bird.y)
     end
 end

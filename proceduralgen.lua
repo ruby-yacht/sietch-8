@@ -117,8 +117,6 @@ function generate_terrain(yOffset)
         end
     end
 
-    printh(#surface_tiles)
-
     player = {
         x = 20, 
         y = 50, 

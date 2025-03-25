@@ -133,7 +133,7 @@ function updatePlayers()
             for _, respawn in ipairs(activeBirdList) do
                 if check_object_collision(player, respawn.bird) then
                     -- Handle collision
-                    printh("Collision detected!")
+                    --printh("Collision detected!")
                     respawnPlayer(respawn)
                 end
             end            
