@@ -137,7 +137,7 @@ function updatePlayers()
             player.y = new_y
 
             for _, respawn in ipairs(activeBirdList) do
-                if check_bound_collision(player, respawn.bird) then
+                if check_object_collision(player, respawn.bird) then
                     -- Handle collision
                     printh("Collision detected!")
                     respawnPlayer(respawn)
@@ -344,23 +344,9 @@ function checkForOutOfBounds(leftBounds)
     end
 end
 
-function get_edges(obj)
-    -- Calculate reference point
-    local center_x = obj.x + obj.boundsOffsetX
-    local center_y = obj.y + obj.boundsOffsetY
-    
-    local half_w = obj.width / 2
-    local half_h = obj.height / 2
-    
-    return {
-        left = center_x - half_w,
-        right = center_x + half_w,
-        top = center_y - half_h,
-        bottom = center_y + half_h
-    }
-end
 
-function check_bound_collision(a, b)
+
+function check_object_collision(a, b)
     local a_edges = get_edges(a)
     local b_edges = get_edges(b)
     

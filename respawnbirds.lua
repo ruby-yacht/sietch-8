@@ -16,8 +16,8 @@ function addRespawnBird()
     local respawn = respawnQueue:dequeue()
     local player = players[respawn.playerKey]
     local bird = respawn.bird
-    local initXPos = camera_x+128
-    local initYPos = 16
+    local initXPos = camera_x + 128
+    local initYPos = camera_y + 16
     bird.x = initXPos
     bird.y = initYPos
     player.x = initXPos
@@ -50,10 +50,14 @@ function update_respawns()
         del(activeBirdList, returnToQueue)
     end
 
+    
+
 end
 
 function draw_respawn_birds()
     for _, respawn in ipairs(activeBirdList) do
+
+        printh(respawn.bird.sprite)
         spr(respawn.bird.sprite, respawn.bird.x, respawn.bird.y)
     end
 end

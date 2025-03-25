@@ -14,8 +14,8 @@ local maxFallVelocity = 5
 disabledPlayerCount = 0
 
 -- start screen variables
-local posx = 8 -- not using this
-local posy = 8
+local posx = 0 -- not using this
+local posy = 0
 local xOffset = 0
 local row = 1
 
@@ -30,6 +30,7 @@ function disablePlayer(player)
     player.vy = 0
     disabledPlayerCount = disabledPlayerCount + 1
     queue_respawn_bird(player.key)
+    
 end
 
 function enablePlayer(player)
@@ -39,7 +40,7 @@ end
 
 function initPlayers()
     local sprites = {33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64}
-
+    
     if stat(30) then 
         local keyInput = stat(31)
         
@@ -48,11 +49,13 @@ function initPlayers()
             currentPlayerCount = currentPlayerCount + 1
         end
 
+        
+
         if not (keyInput == "\32") and not (keyInput == "\13") and not (keyInput == "\112") and not players[keyInput] and currentPlayerCount <= 32 then 
             local sprite = sprites[playerCount % #sprites + 1]
             players[keyInput] = {
-                x = 8 + start_position, 
-                y = 8 + camera_y, 
+                x = 8 + posx + start_position, 
+                y = 8 + posy + camera_y, 
                 width = 8, 
                 height = 8, 
                 boundsOffsetX = 0, 
@@ -71,7 +74,7 @@ function initPlayers()
             playerCount = playerCount + 1
 
             posx = posx + 9
-            if (posx >= 120) then
+            if (posx >= 100) then
                 
                 if xOffset >= 8 then
                     xOffset = 0
@@ -128,7 +131,7 @@ function updatePlayers()
 
             -- Check for respawn bird collisions
             for _, respawn in ipairs(activeBirdList) do
-                if check_bound_collision(player, respawn.bird) then
+                if check_object_collision(player, respawn.bird) then
                     -- Handle collision
                     printh("Collision detected!")
                     respawnPlayer(respawn)
@@ -203,4 +206,30 @@ function checkForOutOfBounds(leftBounds)
     end
 end
 
+-- actor collision
+function check_object_collision(a, b)
+    local a_edges = get_edges(a)
+    local b_edges = get_edges(b)
+    
+    return a_edges.left < b_edges.right and
+           a_edges.right > b_edges.left and
+           a_edges.top < b_edges.bottom and
+           a_edges.bottom > b_edges.top
+end
+
+function get_edges(obj)
+    -- Calculate reference point
+    local center_x = obj.x + obj.boundsOffsetX
+    local center_y = obj.y + obj.boundsOffsetY
+    
+    local half_w = obj.width / 2
+    local half_h = obj.height / 2
+    
+    return {
+        left = center_x - half_w,
+        right = center_x + half_w,
+        top = center_y - half_h,
+        bottom = center_y + half_h
+    }
+end
 

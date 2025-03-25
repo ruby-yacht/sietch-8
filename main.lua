@@ -54,7 +54,6 @@ function _update()
             
             local keyInput = ""
             updatePlayers()
-  
             update_respawns()
             checkForOutOfBounds(camera_x - 16)
             gameOver = (get_disabled_count() == get_player_count())
