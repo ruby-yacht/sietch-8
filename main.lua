@@ -10,7 +10,7 @@ function _init()
     -- reset variables
     gameStarted = false
     gameOver = false
-    start_position = 550
+    start_position = 0
     camera_x = start_position
     camera_y = 80
     timeUntilCameraMoves = 1.5
@@ -81,7 +81,7 @@ function _update()
 
                         for key, player in pairs(players) do
                             if player.disabled == false then
-                                add(win_order, {player, time() - start_time})
+                                add(win_order, {player.sprite, player.disabledCount, player.totalTimeEnabled})
                             end
                         end
 
@@ -160,9 +160,8 @@ function draw_winners(x, y)
     current_y = current_y + line_height
     leftCounter = 0
     for i = 1, #win_order do
-        
         xOffset = leftCounter * 32
-        spr(win_order[i][1].sprite, x + 12 + xOffset, current_y)
+        spr(win_order[i][1], x + 12 + xOffset, current_y)
         print(tostr(i)..indent.."\n", x + 4 + xOffset, current_y, 10)
         if leftCounter == 3 then
             current_y = current_y + line_height
