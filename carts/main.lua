@@ -70,7 +70,7 @@ function _draw()
     cls()
 
    loadChunksIntoView(camera_x)
-   drawPlayers(gameStarted)
+   draw_players(gameStarted)
    camera(camera_x, camera_y)
 
 

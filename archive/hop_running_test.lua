@@ -46,10 +46,10 @@ end
 function _draw()
     cls()
     map()
-    drawPlayers()
+    draw_players()
 end
 
-function drawPlayers()
+function draw_players()
     for key, player in pairs(players) do
         spr(1, player.x, player.y)
     end

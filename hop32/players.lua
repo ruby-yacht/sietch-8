@@ -21,7 +21,7 @@ lethal_tiles = {}
 
 poke(0x5F2D, 0x1) -- enable keyboard input
 
-function drawPlayers()
+function draw_players()
     for key, player in pairs(players) do
         spr(player.sprite, player.x, player.y)
     end
