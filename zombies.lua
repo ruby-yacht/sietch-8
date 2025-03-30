@@ -1,11 +1,15 @@
 zombies = {}
-
-function load_zombie_pool(max_zombies = 5)
+ 
+function load_zombie_pool(max_zombies)
     for i = 1, max_zombies, 1 do
         add(zombies, {
             id = i,
             x = 0,
             y = 0,
+            width = 8,
+            height = 8,
+            boundsOffsetX = 0,
+            boundsOffsetY = 0,
             sprite = 108,
             active = false,
             ai_enabled = false
@@ -32,13 +36,13 @@ function spawn_zombie(x,y)
     end
 
     zombie.active = true
-    zombie.x = x
-    zombie.y = y
+    zombie.x = x * 8
+    zombie.y = y * 8
 
     
     -- spawn zombie over X seconds
     -- set timer and call function? Does this work with simultaneous spawns?
-    yield()
+    --yield()
     -- enable zombie AI
 
 end

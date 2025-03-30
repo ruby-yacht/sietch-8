@@ -6,6 +6,8 @@ local debug = false
 local victory = false
 local win_order = {}
 
+local camera_speed = 15
+
 function _init()
     -- reset variables
     gameStarted = false
@@ -25,6 +27,9 @@ function _init()
     -- level generation
     generate_terrain(10)
     max_camera_distance = (BIOME_DIST.HELL + biome_length - 32) * 8
+
+    load_zombie_pool(5)
+    spawn_zombie(8,20)
 end
 
 function restart()
@@ -43,7 +48,11 @@ function restart()
 
 end
 
-function _update()
+function _update() 
+    --update_player_obj_collisions() -- hmm didn't work
+end
+
+function _update60()
     local current_time = time()  -- Get the current time
     delta_time = current_time - last_time  -- Calculate delta time
     last_time = current_time  
@@ -53,8 +62,8 @@ function _update()
         if not gameOver then
             
             local keyInput = ""
-            updatePlayers()
-            update_respawns()
+            update_players(delta_time)
+            update_respawns(delta_time)
             checkForOutOfBounds(camera_x - 16)
             gameOver = (get_disabled_count() == get_player_count())
 
@@ -74,7 +83,7 @@ function _update()
             else
                 if not victory then
                     -- Update camera position 
-                    camera_x = min(camera_x + 0.5, max_camera_distance)
+                    camera_x = min(camera_x + camera_speed * delta_time, max_camera_distance)
                     if camera_x >= max_camera_distance then
                         victory = true
 
@@ -121,6 +130,7 @@ function _draw()
         
     else
         cls()
+        draw_zombies()
         draw_players(gameStarted)
         draw_respawn_birds()
         draw_terrain()

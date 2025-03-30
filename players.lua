@@ -1,14 +1,15 @@
 poke(0x5F2D, 0x1) -- enable keyboard input
 
 -- game variables
-local GRAVITY = 0.5  -- Gravity value
+local GRAVITY = 10  -- Gravity value
 local BOUNCE_FACTOR = -8  -- Factor to bounce back after collision
 players = {}
 playerCount = 0
 local playerWonCount = 0
-local minBounceForce = -3
-local maxBounceForce = -10
-local bounceChargeRate = .13
+local minBounceForce = -150
+local maxBounceForce = -350
+local maxBounceRange = 30
+local bounceChargeRate = 2
 local maxPlayers = 32
 local maxFallVelocity = 5
 disabledPlayerCount = 0
@@ -101,14 +102,14 @@ function initPlayers()
     return false
 end
 
-function updatePlayers()  
+function update_players(dt)  
     for key, player in pairs(players) do
         if player.disabled == false then
 
             -- Apply grounded or ungrounded updates
             if player.onGround == false then
                 player.vy += GRAVITY
-                player.vy = min(player.vy, maxFallVelocity)
+                --player.vy = min(player.vy, maxFallVelocity)
             else
                 
                 player.bounce_force = max(player.bounce_force - bounceChargeRate, maxBounceForce)
@@ -118,8 +119,8 @@ function updatePlayers()
             end
             
             -- Calculate the new player position
-            local player_new_x = player.x + player.vx
-            local player_new_y = player.y + player.vy
+            local player_new_x = player.x + player.vx * dt
+            local player_new_y = player.y + player.vy * dt
 
             -- Check new positions for collisions
             local checked_position = check_collision(player_new_x, player_new_y, player.x, player.y)
@@ -129,14 +130,42 @@ function updatePlayers()
             player.x = checked_position.x
             player.y = checked_position.y
 
+             -- Check for respawn bird collisions
+             for _, respawn in ipairs(activeBirdList) do
+                if check_object_collision(player, respawn.bird) then
+                    respawnPlayer(respawn)
+                end
+            end   
+            
+            -- Check for zombie collisions
+            for _, zombie in ipairs(zombies) do
+                if check_object_collision(player, zombie) then
+                    disablePlayer(player)
+                end
+            end
+
+        end
+    end
+end
+
+-- WIP
+function update_player_obj_collisions()
+    for key, player in pairs(players) do
+        if player.disabled == false then
+
             -- Check for respawn bird collisions
             for _, respawn in ipairs(activeBirdList) do
                 if check_object_collision(player, respawn.bird) then
-                    -- Handle collision
-                    --printh("Collision detected!")
                     respawnPlayer(respawn)
                 end
-            end            
+            end   
+            
+            -- Check for zombie collisions
+            for _, zombie in ipairs(zombies) do
+                if check_object_collision(player, zombie) then
+                    disablePlayer(player)
+                end
+            end
         end
     end
 end
@@ -146,7 +175,7 @@ function bouncePlayer(key)
     local player = players[key]
     if not (player == nil) and player.onGround and not(player.won) then
         player.vy = player.bounce_force
-        player.vx = 1
+        player.vx = maxBounceRange
         player.bounce_force = minBounceForce
     end
 end

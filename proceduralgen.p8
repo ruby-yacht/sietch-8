@@ -4,7 +4,7 @@ __lua__
 #include helper.lua
 
 #include proceduralgen.lua
---#include zombies.lua
+#include zombies.lua
 #include respawnbirds.lua
 #include players.lua
 
