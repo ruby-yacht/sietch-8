@@ -267,6 +267,26 @@ function get_tile_at_pos(x, y)
     return get_tile(flr(x / 8) , flr(y / 8))
 end
 
+function get_surface_tile_at(x)
+
+     -- get all surface tiles. Update surface sprites if needed
+
+    for y = 1, map_y_size-1 do 
+
+        local above_tile = get_tile(x, y-1)
+        local target_tile = get_tile(x,y)
+
+        if above_tile.tile == TILE.NONE and target_tile.tile ~= TILE.NONE then
+            return target_tile
+        end
+        
+    end
+  
+
+    return nil
+    
+end
+
 function test_mode()
     
     camera_x = player.x - 56

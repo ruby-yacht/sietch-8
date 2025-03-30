@@ -1,13 +1,13 @@
 zombies = {}
  
 function load_zombie_pool(max_zombies)
-    for i = 1, max_zombies, 1 do
+    for i = 0, max_zombies, 1 do
         add(zombies, {
             id = i,
             x = 0,
             y = 0,
-            width = 8,
-            height = 8,
+            width = 1,
+            height = 1,
             boundsOffsetX = 0,
             boundsOffsetY = 0,
             sprite = 108,
@@ -15,10 +15,6 @@ function load_zombie_pool(max_zombies)
             ai_enabled = false
         })
     end
-end
-
-function get_next_zombie_in_pool()
-
 end
 
 function spawn_zombie(x,y)
@@ -31,7 +27,7 @@ function spawn_zombie(x,y)
     end
 
     if zombie == nil then
-        printh("no more zombie available")
+        printh("no more zombies available")
         return
     end
 
@@ -47,12 +43,23 @@ function spawn_zombie(x,y)
 
 end
 
+function disable_zombie(zombie)
+    zombie.x = 0
+    zombie.y = 0
+    zombie.active = false
+    zombie.ai_enabled = false
+end
 
-
-function update_zombie_ai()
+function update_zombies(dt)
     for index, zombie in ipairs(zombies) do
+
+        if zombie.x + 8 < camera_x then
+            disable_zombie(zombie)
+            break
+        end
+
         if zombie.active and zombie.ai_enabled then
-            -- do stuff???
+            
         end
     end
 end

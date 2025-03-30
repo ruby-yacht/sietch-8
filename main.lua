@@ -5,8 +5,12 @@ local timeUntilRestart = 2
 local debug = false
 local victory = false
 local win_order = {}
+local delta_time
+local last_time
 
 local camera_speed = 15
+
+local ai_spawn_timer = 0
 
 function _init()
     -- reset variables
@@ -28,8 +32,9 @@ function _init()
     generate_terrain(10)
     max_camera_distance = (BIOME_DIST.HELL + biome_length - 32) * 8
 
-    load_zombie_pool(5)
-    spawn_zombie(8,20)
+    load_zombie_pool(3)
+    spawn_zombie(7,20)
+    ai_spawner_timer = 0
 end
 
 function restart()
@@ -48,10 +53,6 @@ function restart()
 
 end
 
-function _update() 
-    --update_player_obj_collisions() -- hmm didn't work
-end
-
 function _update60()
     local current_time = time()  -- Get the current time
     delta_time = current_time - last_time  -- Calculate delta time
@@ -63,9 +64,24 @@ function _update60()
             
             local keyInput = ""
             update_players(delta_time)
+            update_zombies(delta_time)
             update_respawns(delta_time)
             checkForOutOfBounds(camera_x - 16)
             gameOver = (get_disabled_count() == get_player_count())
+
+            if ai_spawn_timer >= 60 then
+                local spawn_point = get_surface_tile_at(flr(camera_x / 8) + 17)
+                local spawn_chance = rnd(1)
+                if spawn_point then
+                    printh(spawn_chance)
+                    if spawn_chance > .8 then
+                        spawn_zombie(spawn_point.x, spawn_point.y-1)
+                    end
+                end
+                ai_spawn_timer = 0
+            end
+
+            ai_spawn_timer += 1
 
             -- Process key input
             while stat(30) do
