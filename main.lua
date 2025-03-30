@@ -2,7 +2,7 @@ poke(0x5F2D, 0x1) -- enable keyboard input
 
 local timeUntilCameraMoves = 1.5
 local timeUntilRestart = 2
-local debug = false
+local debug = true
 local victory = false
 local win_order = {}
 local delta_time
@@ -53,7 +53,7 @@ function restart()
 
 end
 
-function _update60()
+function _update()
     local current_time = time()  -- Get the current time
     delta_time = current_time - last_time  -- Calculate delta time
     last_time = current_time  
@@ -64,23 +64,25 @@ function _update60()
             
             local keyInput = ""
             update_players(delta_time)
-            update_zombies(delta_time)
-            update_respawns(delta_time)
+            --update_zombies(delta_time)
+            --update_respawns(delta_time)
             checkForOutOfBounds(camera_x - 16)
             gameOver = (get_disabled_count() == get_player_count())
 
-            if ai_spawn_timer >= 60 then
-                local spawn_point = get_surface_tile_at(flr(camera_x / 8) + 17)
-                local spawn_chance = rnd(1)
-                if spawn_point then
-                    printh(spawn_chance)
-                    if spawn_chance > .8 then
-                        spawn_zombie(spawn_point.x, spawn_point.y-1)
+            --[[]
+                if ai_spawn_timer >= 60 then
+                    local spawn_point = get_surface_tile_at(flr(camera_x / 8) + 17)
+                    local spawn_chance = rnd(1)
+                    if spawn_point then
+                        printh(spawn_chance)
+                        if spawn_chance > .8 then
+                            spawn_zombie(spawn_point.x, spawn_point.y-1)
+                        end
                     end
+                    ai_spawn_timer = 0
                 end
-                ai_spawn_timer = 0
-            end
-
+                ]]
+                
             ai_spawn_timer += 1
 
             -- Process key input
@@ -166,9 +168,9 @@ function _draw()
         end
 
         if (debug) then
-            print("cpu usage: " .. stat(1) .. "%", camera_x,8)
-            print("memory usage: " .. stat(0) .. " bytes", camera_x,16)
-            print("frame rate: " .. stat(7), camera_x,24)
+            print("cpu usage: " .. stat(1) .. "%", camera_x,camera_y+8)
+            print("memory usage: " .. stat(0) .. " bytes", camera_x,camera_y+16)
+            print("frame rate: " .. stat(7), camera_x,camera_y+24)
         end  
     end      
 end
