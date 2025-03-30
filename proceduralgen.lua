@@ -3,7 +3,7 @@ poke(0x5F2D, 0x1) -- enable keyboard input
 levelgen = {}
 surface_tiles = {}
 
-biome_length = 16
+biome_length = 64
 BIOME_DIST = {
     GRASS = 0,
     DESERT = 0,
