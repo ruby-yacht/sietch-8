@@ -29,7 +29,7 @@ function _init()
     start_time = time()
 
     -- level generation
-    generate_terrain(10)
+    generate_terrain_chunk(10)
     max_camera_distance = (BIOME_DIST.HELL + biome_length - 32) * 8
 
     load_zombie_pool(3)

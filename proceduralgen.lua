@@ -1,7 +1,9 @@
 poke(0x5F2D, 0x1) -- enable keyboard input
 
-levelgen = {}
+chunks = {} -- 2 or 3 chunk tables
 surface_tiles = {}
+
+local TERRAIN_Y_OFFSET = 0
 
 biome_length = 64
 BIOME_DIST = {
@@ -13,8 +15,10 @@ BIOME_DIST = {
     HELL = 0
 }
 
-map_x_size = -1
+map_x_size = 0
 map_y_size = 32
+local chunk_x_size = 16
+
 -- tile ids: air = 0; grass = 2; ground = 3; wall = 4; 
 
 TILE = {
@@ -40,59 +44,66 @@ TILE = {
 }
 
 groundlevel = 11 -- relative to tiles, not pixels
-player = {} -- for testing
-testmode = false
 
-
-
-
-function generate_terrain(yOffset)
+function init_terrain_gen(yOffset)
+    TERRAIN_Y_OFFSET = yOffset
 
     set_biome_distances()
 
+    local c = generate_terrain_chunk(0)
+    add(chunks, c)
+
+end
+
+function generate_terrain_chunk(xOffset)
+
+    local chunk = {xOffset = xOffset, tiles = {}}
+
     -- Fill all cells with ground
-    for x = 0, map_x_size-1 do
-        levelgen[x] = {}
-        for y = 0, map_y_size-1 do         
+    for x = xOffset, xOffset+chunk_x_size-1 do
+        chunk.tiles[x] = {}
+        for y = 0, map_y_size-1 do -- this creates 31 tiles FYI   
             if x < BIOME_DIST.GRASS then
-                levelgen[x][y] = {x = x, y = y, tile = TILE.GROUND}
+                chunk.tiles[x][y] = {x = x, y = y, tile = TILE.GROUND}
             elseif x < BIOME_DIST.DESERT then
-                levelgen[x][y] = {x = x, y = y, tile = TILE.SAND_1}
+                chunk.tiles[x][y] = {x = x, y = y, tile = TILE.SAND_1}
             elseif x < BIOME_DIST.MOUNTAIN then
-                levelgen[x][y] = {x = x, y = y, tile = TILE.MOUNTAIN_2}
+                chunk.tiles[x][y] = {x = x, y = y, tile = TILE.MOUNTAIN_2}
             elseif x < BIOME_DIST.SNOW then
-                levelgen[x][y] = {x = x, y = y, tile = TILE.SNOW_2}
+                chunk.tiles[x][y] = {x = x, y = y, tile = TILE.SNOW_2}
             elseif x < BIOME_DIST.ORELAND then
-                levelgen[x][y] = {x = x, y = y, tile = TILE.ORELAND_1}
+                chunk.tiles[x][y] = {x = x, y = y, tile = TILE.ORELAND_1}
             elseif x < BIOME_DIST.HELL then
-                levelgen[x][y] = {x = x, y = y, tile = TILE.HELL_2}
+                chunk.tiles[x][y] = {x = x, y = y, tile = TILE.HELL_2}
             else
-                levelgen[x][y] = {x = x, y = y, tile = TILE.GROUND}
+                chunk.tiles[x][y] = {x = x, y = y, tile = TILE.GROUND}
             end  
         end
     end
 
+    --printh(#chunk.tiles[xOffset])
+
     -- generate ground by removing ground tiles.
     -- Q: should I store the surface in an array? Then know which tiles I can spawn or modify on the surface.
-    for x = 0, map_x_size-1 do
+    for x = xOffset, xOffset+chunk_x_size-1 do
         for y = 0, map_y_size-1 do      
-            local h = get_cell_height_at_(x) + yOffset -- Normalize x to [0, 1] (remember to explain why dividing by chunk_x_size fixes sin output)
+            local h = get_cell_height_at_(x) + TERRAIN_Y_OFFSET -- Normalize x to [0, 1] (remember to explain why dividing by chunk_x_size fixes sin output)
             --h = 2 * sin( ((x-1) / chunk_x_size) * 2)
             if y - groundlevel < h then
-                get_tile(x,y).tile = TILE.NONE
+                chunk.tiles[x][y].tile = TILE.NONE
             end
             
         end
     end
     
-    draw_holes()
+    --draw_holes() -- draw a hole when need
 
     -- get all surface tiles. Update surface sprites if needed
-    for x = 0, map_x_size-1 do
+    for x = xOffset, xOffset+chunk_x_size-1 do
         for y = 1, map_y_size-1 do 
 
-            local above_tile = get_tile(x, y-1)
-            local target_tile = get_tile(x,y)
+            local above_tile = chunk.tiles[x][y-1]
+            local target_tile = chunk.tiles[x][y]
 
             if above_tile.tile == TILE.NONE and target_tile.tile ~= TILE.NONE then
                 add(surface_tiles, target_tile)
@@ -117,25 +128,8 @@ function generate_terrain(yOffset)
         end
     end
 
-    player = {
-        x = 20, 
-        y = 50, 
-        width = 8, 
-        height = 8, 
-        boundsOffsetX = 0, 
-        boundsOffsetY = 0, 
-        vx = 0, 
-        vy = 0, 
-        onGround = false, 
-        bounce_force = minBounceForce, 
-        key=70, 
-        sprite = 70, 
-        disabled = false,
-        disabledCount = 0,
-        totalTimeEnabled = 0,
-        won = false
-    }
-    --printh("------------------------")
+
+    return chunk
 end
 
 function set_biome_distances()
@@ -191,7 +185,7 @@ function draw_holes()
     for i = biome_length-hole_width, map_x_size-biome_length-hole_width, biome_length do
         for x = i, i + hole_width - 1, 1 do
             for y = 0, map_y_size - 1 do
-                levelgen[x][y].tile = TILE.NONE   
+                chunks[x][y].tile = TILE.NONE   
             end
         end
     end
@@ -221,30 +215,28 @@ function draw_holes()
 
 end
 
-function _update()
-    if testmode then
-        test_mode()
-    end
-end
-
 function draw_terrain()
     local visibleTilesX = flr(camera_x) + 16
     local visibleTilesY = flr(camera_y) + 16
 
+    for i,chunk in ipairs(chunks) do
+        for x = chunk.xOffset, chunk.xOffset+chunk_x_size-1 do
+            for y = 0, map_y_size-1 do     
+                local tile = get_tile(x,y).tile
+                if tile > 0 then -- no error was returned
+                    
+                    spr(tile, x * 8, y * 8)
     
-    for x = 0, map_x_size-1 do
-        for y = 0, map_y_size-1 do     
-            local tile = get_tile(x,y).tile
-            if tile > 0 then
-                
-                spr(tile, x * 8, y * 8)
-
-                --Debug
-                --print((y - 1) * 8, (x - 1) * 8, (y - 1) * 8)
-                --print(y, (x - 1) * 8, (y - 1) * 8)
+                    --Debug
+                    --print((y - 1) * 8, (x - 1) * 8, (y - 1) * 8)
+                    --print(y, (x - 1) * 8, (y - 1) * 8)
+                end
             end
         end
     end
+
+    
+
 
 --[[    -- draw surface tiles (useful for debugging)
     for index, tile in ipairs(surface_tiles) do
@@ -259,109 +251,26 @@ function get_tile(x, y)
         printh("(" .. x .. "," .. y .. ") tile index is out of bounds")
         return {tile = -1}
     else
-        return levelgen[flr(x)][flr(y)]
+
+        local chunk = {}
+
+        -- 1. Identify which chunk to search for
+        for i, c in ipairs(chunks) do
+            if c.xOffset <= x and c.xOffset + chunk_x_size * 8 > x then
+                chunk = c
+            else
+                printh("(" .. x .. "," .. y .. ") tile not found")
+                return {tile = -1}
+            end
+        end
+
+        -- 2. Return tile from the correct chunk
+        return chunk.tiles[flr(x)][flr(y)]
     end
 end
 
 function get_tile_at_pos(x, y)   
     return get_tile(flr(x / 8) , flr(y / 8))
-end
-
-function get_surface_tile_at(x)
-
-     -- get all surface tiles. Update surface sprites if needed
-
-    for y = 1, map_y_size-1 do 
-
-        local above_tile = get_tile(x, y-1)
-        local target_tile = get_tile(x,y)
-
-        if above_tile.tile == TILE.NONE and target_tile.tile ~= TILE.NONE then
-            return target_tile
-        end
-        
-    end
-  
-
-    return nil
-    
-end
-
-function test_mode()
-    
-    camera_x = player.x - 56
-    --camera_y = player.y + 64
-
-    player.vx = 0
-    player.vy = 0
-
-    if btn(0) then
-        player.vx -= 2
-     end
-     
-     if btn(1) then
-        player.vx += 2
-     end
-     
-     if btn(2) then
-        player.vy -= 2
-     end
-     
-     if btn(3) then
-        player.vy += 2
-     end
-
-    while stat(30) do
-        keyInput = stat(31)
-        if keyInput == "t" then
-            testmode = false
-        end        
-    end
-
-     local player_new_x = player.x + player.vx
-     local player_new_y = player.y + player.vy
-
-     checked_position = check_collision(player_new_x, player_new_y, player.x, player.y)
-
-     player.x = checked_position.x
-     player.y = checked_position.y
-    
-end
-
-function hop_mode()
-    camera_x += .5
-    camera_x = min(camera_x, (map_x_size-16) * 8)
-
-    -- Process key input
-    while stat(30) do
-        keyInput = stat(31)
-        if keyInput == "t" then
-            testmode = true
-        elseif player.onGround then
-            player.vx = 1
-            player.vy = -3
-        end
-        
-    end
-
-    -- Apply gravity
-    if player.onGround == false then
-        player.vy += .3
-    else
-        if player.vy >= 0 then -- if just landed
-            player.vx = 0
-        end
-    end
-    
-    local player_new_x = player.x + player.vx
-    local player_new_y = player.y + player.vy
-
-    -- Check for collisions
-    local checked_position = check_collision(player_new_x, player_new_y, player.x, player.y)
-    player.onGround = checked_position.onGround
-
-    player.x = checked_position.x
-    player.y = checked_position.y
 end
 
 function check_collision(new_x, new_y, x,y)
