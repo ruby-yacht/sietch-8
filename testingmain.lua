@@ -60,7 +60,7 @@ function _draw()
 
     if (debug) then
         print("cpu usage: " .. stat(1) * 100 .. "%", camera_x,camera_y+8)
-        print("memory usage: " .. stat(0) .. "/2040 bytes", camera_x,camera_y+16)
+        print("memory usage: " .. stat(0) .. "/2048 bytes", camera_x,camera_y+16)
         print("frame rate: " .. stat(7), camera_x,camera_y+24)
     end  
 

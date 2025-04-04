@@ -29,7 +29,7 @@ function _init()
     start_time = time()
 
     -- level generation
-    generate_terrain_chunk(10)
+    init_terrain_gen(10)
     max_camera_distance = (BIOME_DIST.HELL + biome_length - 32) * 8
 
     load_zombie_pool(3)
@@ -66,6 +66,7 @@ function _update()
             update_players(delta_time)
             --update_zombies(delta_time)
             --update_respawns(delta_time)
+            update_terrain_chunks()
             checkForOutOfBounds(camera_x - 16)
             gameOver = (get_disabled_count() == get_player_count())
 
@@ -169,7 +170,7 @@ function _draw()
 
         if (debug) then
             print("cpu usage: " .. stat(1) * 100 .. "%", camera_x,camera_y+8)
-            print("memory usage: " .. stat(0) .. " bytes", camera_x,camera_y+16)
+            print("memory usage: " .. stat(0) .. "/2048 bytes bytes", camera_x,camera_y+16)
             print("frame rate: " .. stat(7), camera_x,camera_y+24)
         end  
     end      

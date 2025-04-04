@@ -4,11 +4,11 @@ __lua__
 #include helper.lua
 
 #include proceduralgen.lua
---#include zombies.lua
---#include respawnbirds.lua
---#include players.lua
-#include testingmain.lua
---#include main.lua
+#include zombies.lua
+#include respawnbirds.lua
+#include players.lua
+--#include testingmain.lua
+#include main.lua
 
 __gfx__
 000000000000aa00bbbbbbbb44444444677777764cccccccccccccccccccccc48888888888888888888888847700770000000000000000000000000000000000
