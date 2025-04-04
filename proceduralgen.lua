@@ -19,6 +19,9 @@ map_x_size = 0
 map_y_size = 32
 local chunk_x_size = 16
 
+local new_chunk_threshold = 128
+local chunk_start_unit = 0
+
 -- tile ids: air = 0; grass = 2; ground = 3; wall = 4; 
 
 TILE = {
@@ -50,17 +53,38 @@ function init_terrain_gen(yOffset)
 
     set_biome_distances()
 
-    local c = generate_terrain_chunk(0)
-    add(chunks, c)
+    -- generate initial terrain
+    add(chunks, generate_terrain_chunk(chunk_start_unit))
+    chunk_start_unit += chunk_x_size
+    add(chunks, generate_terrain_chunk(chunk_start_unit)) -- each chunk costs 20% cpu to draw!
 
 end
 
-function generate_terrain_chunk(xOffset)
+function update_terrain_chunks()
+    -- if camera passes threshold, then remove oldest chunk and generate a new one.
+    if camera_x >= new_chunk_threshold then
+        new_chunk_threshold += 128
+        chunk_start_unit += chunk_x_size
+        local new_chunk = generate_terrain_chunk(chunk_start_unit)
+        add(chunks, new_chunk)
 
-    local chunk = {xOffset = xOffset, tiles = {}}
+        local chunk_to_remove = new_chunk
+        for chunk in all(chunks) do
+            if chunk.x_offset_unit < chunk_to_remove.x_offset_unit then
+                chunk_to_remove = chunk
+            end
+        end
+
+        del(chunks, chunk_to_remove)
+    end
+end
+
+function generate_terrain_chunk(x_offset_unit)
+
+    local chunk = {x_offset_unit = x_offset_unit, tiles = {}}
 
     -- Fill all cells with ground
-    for x = xOffset, xOffset+chunk_x_size-1 do
+    for x = x_offset_unit, x_offset_unit+chunk_x_size-1 do
         chunk.tiles[x] = {}
         for y = 0, map_y_size-1 do -- this creates 31 tiles FYI   
             if x < BIOME_DIST.GRASS then
@@ -81,11 +105,12 @@ function generate_terrain_chunk(xOffset)
         end
     end
 
-    --printh(#chunk.tiles[xOffset])
+    --printh(#chunk.tiles[x_offset_unit])
+    --printh(chunk.x_offset_unit)
 
     -- generate ground by removing ground tiles.
     -- Q: should I store the surface in an array? Then know which tiles I can spawn or modify on the surface.
-    for x = xOffset, xOffset+chunk_x_size-1 do
+    for x = x_offset_unit, x_offset_unit+chunk_x_size-1 do
         for y = 0, map_y_size-1 do      
             local h = get_cell_height_at_(x) + TERRAIN_Y_OFFSET -- Normalize x to [0, 1] (remember to explain why dividing by chunk_x_size fixes sin output)
             --h = 2 * sin( ((x-1) / chunk_x_size) * 2)
@@ -99,7 +124,7 @@ function generate_terrain_chunk(xOffset)
     --draw_holes() -- draw a hole when need
 
     -- get all surface tiles. Update surface sprites if needed
-    for x = xOffset, xOffset+chunk_x_size-1 do
+    for x = x_offset_unit, x_offset_unit+chunk_x_size-1 do
         for y = 1, map_y_size-1 do 
 
             local above_tile = chunk.tiles[x][y-1]
@@ -216,11 +241,11 @@ function draw_holes()
 end
 
 function draw_terrain()
-    local visibleTilesX = flr(camera_x) + 16
-    local visibleTilesY = flr(camera_y) + 16
+    --local visibleTilesX = flr(camera_x) + 16
+    --local visibleTilesY = flr(camera_y) + 16
 
-    for i,chunk in ipairs(chunks) do
-        for x = chunk.xOffset, chunk.xOffset+chunk_x_size-1 do
+    for chunk in all(chunks) do
+        for x = chunk.x_offset_unit, chunk.x_offset_unit+chunk_x_size-1 do
             for y = 0, map_y_size-1 do     
                 local tile = get_tile(x,y).tile
                 if tile > 0 then -- no error was returned
@@ -252,20 +277,26 @@ function get_tile(x, y)
         return {tile = -1}
     else
 
-        local chunk = {}
+        local chunk = {tile = -1}
+
+        x = flr(x)
+        y = flr(y)
 
         -- 1. Identify which chunk to search for
-        for i, c in ipairs(chunks) do
-            if c.xOffset <= x and c.xOffset + chunk_x_size * 8 > x then
+        for c in all(chunks) do
+            if x >= c.x_offset_unit and x < c.x_offset_unit + chunk_x_size then
                 chunk = c
-            else
-                printh("(" .. x .. "," .. y .. ") tile not found")
-                return {tile = -1}
+                break;
             end
         end
 
+        if chunk.tile == -1 then
+            printh("(" .. x .. "," .. y .. ") tile not found")
+            return chunk
+        end
+
         -- 2. Return tile from the correct chunk
-        return chunk.tiles[flr(x)][flr(y)]
+        return chunk.tiles[x][y]
     end
 end
 
@@ -281,6 +312,7 @@ function check_collision(new_x, new_y, x,y)
     local y_unit = y / 8
     local onGround = false
 
+    --printh(new_x)
     -- check X axis collisions
     if get_tile(new_x_unit, y_unit).tile ~= TILE.NONE or get_tile(new_x_unit, y_unit + 0.999).tile ~= TILE.NONE then
         new_x_unit = flr(new_x_unit) + 1
