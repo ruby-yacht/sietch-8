@@ -10,9 +10,8 @@ local last_time
 
 local camera_speed = 15
 
-local ai_spawn_timer = 0
-
 function _init()
+    printh("init")
     -- reset variables
     gameStarted = false
     gameOver = false
@@ -34,24 +33,28 @@ function _init()
 
     load_zombie_pool(3)
     spawn_zombie(7,20)
-    ai_spawner_timer = 0
 end
 
 function restart()
-    --cls()
-    gameStarted = false
-    gameOver = false
-    camera_x = start_position
-    timeUntilCameraMoves = 1.5
-    delta_time = 0
     cls()
-    resetPlayers()
-    last_time = time()
-    start_time = time()
+    resetPlayers() -- input is being read after game over state but before proper reset
     win_order = {}
-    victory = false
+    _init()
+end
+
+chunk_generated_callback = function(chunk)
+
+    -- spawn zombies
+    local zombies_to_spawn = 2 -- should depend on the biome/distance
+    for i = 0, zombies_to_spawn do
+        -- get a random surface tile
+        local random_x_pos = flr(rnd(#chunk.surface_tiles)) + 1
+        local spawn_point = chunk.surface_tiles[random_x_pos]
+        spawn_zombie(spawn_point.x, spawn_point.y-1)
+    end
 
 end
+
 
 function _update()
     local current_time = time()  -- Get the current time
@@ -59,32 +62,18 @@ function _update()
     last_time = current_time  
 
 
+
     if gameStarted then
         if not gameOver then
             
             local keyInput = ""
             update_players(delta_time)
-            --update_zombies(delta_time)
-            --update_respawns(delta_time)
-            update_terrain_chunks()
+            update_zombies(delta_time)
+            update_respawns(delta_time)
+            update_terrain_chunks(chunk_generated_callback)
             checkForOutOfBounds(camera_x - 16)
             gameOver = (get_disabled_count() == get_player_count())
 
-            --[[]
-                if ai_spawn_timer >= 60 then
-                    local spawn_point = get_surface_tile_at(flr(camera_x / 8) + 17)
-                    local spawn_chance = rnd(1)
-                    if spawn_point then
-                        printh(spawn_chance)
-                        if spawn_chance > .8 then
-                            spawn_zombie(spawn_point.x, spawn_point.y-1)
-                        end
-                    end
-                    ai_spawn_timer = 0
-                end
-                ]]
-                
-            ai_spawn_timer += 1
 
             -- Process key input
             while stat(30) do

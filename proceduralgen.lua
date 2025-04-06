@@ -1,7 +1,6 @@
 poke(0x5F2D, 0x1) -- enable keyboard input
 
 chunks = {} -- 2 or 3 chunk tables
-surface_tiles = {}
 
 local TERRAIN_Y_OFFSET = 0
 
@@ -50,8 +49,9 @@ groundlevel = 11 -- relative to tiles, not pixels
 
 function init_terrain_gen(yOffset)
     TERRAIN_Y_OFFSET = yOffset
-
+    chunks = {}
     set_biome_distances()
+    chunk_start_unit = 0
 
     -- generate initial terrain
     add(chunks, generate_terrain_chunk(chunk_start_unit))
@@ -60,7 +60,7 @@ function init_terrain_gen(yOffset)
 
 end
 
-function update_terrain_chunks()
+function update_terrain_chunks(generated_chunk_callback)
     -- if camera passes threshold, then remove oldest chunk and generate a new one.
     if camera_x >= new_chunk_threshold then
         new_chunk_threshold += 128
@@ -76,12 +76,13 @@ function update_terrain_chunks()
         end
 
         del(chunks, chunk_to_remove)
+        generated_chunk_callback(new_chunk)
     end
 end
 
 function generate_terrain_chunk(x_offset_unit)
 
-    local chunk = {x_offset_unit = x_offset_unit, tiles = {}}
+    local chunk = {x_offset_unit = x_offset_unit, tiles = {}, surface_tiles = {}}
 
     -- Fill all cells with ground
     for x = x_offset_unit, x_offset_unit+chunk_x_size-1 do
@@ -131,7 +132,7 @@ function generate_terrain_chunk(x_offset_unit)
             local target_tile = chunk.tiles[x][y]
 
             if above_tile.tile == TILE.NONE and target_tile.tile ~= TILE.NONE then
-                add(surface_tiles, target_tile)
+                add(chunk.surface_tiles, target_tile)
 
                 if x < BIOME_DIST.GRASS then
                     target_tile.tile = TILE.GRASS
@@ -259,15 +260,6 @@ function draw_terrain()
             end
         end
     end
-
-    
-
-
---[[    -- draw surface tiles (useful for debugging)
-    for index, tile in ipairs(surface_tiles) do
-        spr(tile.tile, tile.x * 8, tile.y * 8)
-    end
-]]
 
 end
 

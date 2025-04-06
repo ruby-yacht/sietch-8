@@ -11,7 +11,7 @@ local maxBounceForce = -350
 local maxBounceRange = 30
 local bounceChargeRate = 2
 local maxPlayers = 32
-local maxFallVelocity = 5
+local maxFallVelocity = 100
 disabledPlayerCount = 0
 
 -- start screen variables
@@ -108,8 +108,11 @@ function update_players(dt)
 
             -- Apply grounded or ungrounded updates
             if player.onGround == false then
-                player.vy += GRAVITY
-                --player.vy = min(player.vy, maxFallVelocity)
+                if player.vy > 0 then
+                    player.vy = min(player.vy + GRAVITY, maxFallVelocity)
+                else
+                    player.vy += GRAVITY
+                end
             else
                 
                 player.bounce_force = max(player.bounce_force - bounceChargeRate, maxBounceForce)
@@ -127,7 +130,7 @@ function update_players(dt)
             player.onGround = checked_position.onGround
 
             -- Apply final position updates, if any
-            player.x = checked_position.x
+            player.x = min(checked_position.x, camera_x+128-player.width)
             player.y = checked_position.y
 
              -- Check for respawn bird collisions
