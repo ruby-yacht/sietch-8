@@ -17,9 +17,10 @@ BIOME_DIST = {
 map_x_size = 0
 map_y_size = 32
 local chunk_x_size = 16
-
+local hole_width = 3
 local new_chunk_threshold = 128
 local chunk_start_unit = 0
+local draw_hole_chance = .50
 
 -- tile ids: air = 0; grass = 2; ground = 3; wall = 4; 
 
@@ -122,7 +123,19 @@ function generate_terrain_chunk(x_offset_unit)
         end
     end
     
-    --draw_holes() -- draw a hole when need
+    -- draw a holes randomly
+    if x_offset_unit > 0 and rnd(1) >= 1-draw_hole_chance then
+        local random_x_pos = flr(rnd(chunk_x_size-hole_width))
+        local hole_start = x_offset_unit + random_x_pos
+
+        for x = hole_start , hole_start + hole_width, 1 do
+            for y = 0, map_y_size-1, 1 do
+                chunk.tiles[x][y].tile = TILE.NONE   
+            end
+            
+        end
+    end
+
 
     -- get all surface tiles. Update surface sprites if needed
     for x = x_offset_unit, x_offset_unit+chunk_x_size-1 do
@@ -296,20 +309,23 @@ function get_tile_at_pos(x, y)
     return get_tile(flr(x / 8) , flr(y / 8))
 end
 
-function check_collision(new_x, new_y, x,y)
+function check_collision(new_x, new_y, x,y, hit_wall_callback)
     -- convert world positions to grid positions
     local new_x_unit = new_x / 8
     local new_y_unit = new_y / 8
     local x_unit = x / 8
     local y_unit = y / 8
     local onGround = false
+    local hit_wall = false
 
     --printh(new_x)
     -- check X axis collisions
     if get_tile(new_x_unit, y_unit).tile ~= TILE.NONE or get_tile(new_x_unit, y_unit + 0.999).tile ~= TILE.NONE then
         new_x_unit = flr(new_x_unit) + 1
+        hit_wall = true
     elseif get_tile(new_x_unit + 1, y_unit).tile ~= TILE.NONE or get_tile(new_x_unit + 1, y_unit + 0.999).tile ~= TILE.NONE then
         new_x_unit = flr(new_x_unit)
+        hit_wall = true
     end
 
     -- check Y axis collisions
@@ -324,5 +340,5 @@ function check_collision(new_x, new_y, x,y)
     new_x = new_x_unit * 8
     new_y = new_y_unit * 8
 
-    return {x = new_x, y = new_y, onGround = onGround} -- this is returning nil for some reason
+    return {x = new_x, y = new_y, onGround = onGround, hit_wall = hit_wall} -- this is returning nil for some reason
 end

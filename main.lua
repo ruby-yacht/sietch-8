@@ -11,7 +11,6 @@ local last_time
 local camera_speed = 15
 
 function _init()
-    printh("init")
     -- reset variables
     gameStarted = false
     gameOver = false
