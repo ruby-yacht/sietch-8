@@ -28,7 +28,7 @@ function _init()
 
     -- level generation
     init_terrain_gen(10)
-    max_camera_distance = (BIOME_DIST.HELL + biome_length - 32) * 8
+    max_camera_distance = (map_x_size - 16) * 8
 
     load_zombie_pool(3)
     spawn_zombie(7,20)

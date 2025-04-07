@@ -20,7 +20,7 @@ local chunk_x_size = 16
 local hole_width = 3
 local new_chunk_threshold = 128
 local chunk_start_unit = 0
-local draw_hole_chance = .50
+local draw_hole_chance = 0
 
 -- tile ids: air = 0; grass = 2; ground = 3; wall = 4; 
 
@@ -61,6 +61,7 @@ function init_terrain_gen(yOffset)
 
 end
 
+-- BUG chunks stop loading after death
 function update_terrain_chunks(generated_chunk_callback)
     -- if camera passes threshold, then remove oldest chunk and generate a new one.
     if camera_x >= new_chunk_threshold then
