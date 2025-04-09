@@ -2,7 +2,7 @@ poke(0x5F2D, 0x1) -- enable keyboard input
 
 local timeUntilCameraMoves = 1.5
 local timeUntilRestart = 2
-local debug = true
+local debug = false
 local victory = false
 local win_order = {}
 local delta_time
@@ -31,7 +31,7 @@ function _init()
     max_camera_distance = (map_x_size - 16) * 8
 
     load_zombie_pool(3)
-    spawn_zombie(7,20)
+    --spawn_zombie(7,20)
 end
 
 function restart()

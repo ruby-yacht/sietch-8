@@ -20,7 +20,7 @@ local chunk_x_size = 16
 local hole_width = 3
 local new_chunk_threshold = 128
 local chunk_start_unit = 0
-local draw_hole_chance = 0
+local draw_hole_chance = .5
 
 -- tile ids: air = 0; grass = 2; ground = 3; wall = 4; 
 
