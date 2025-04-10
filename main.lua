@@ -30,7 +30,7 @@ function _init()
     init_terrain_gen(10)
     max_camera_distance = (map_x_size - 16) * 8
 
-    load_zombie_pool(3)
+    load_zombie_pool(2)
     --spawn_zombie(7,20)
 end
 

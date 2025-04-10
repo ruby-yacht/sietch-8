@@ -4,7 +4,7 @@ chunks = {} -- 2 or 3 chunk tables
 
 local TERRAIN_Y_OFFSET = 0
 
-biome_length = 64
+biome_length = 48
 BIOME_DIST = {
     GRASS = 0,
     DESERT = 0,
@@ -52,6 +52,7 @@ function init_terrain_gen(yOffset)
     TERRAIN_Y_OFFSET = yOffset
     chunks = {}
     set_biome_distances()
+    new_chunk_threshold = 128
     chunk_start_unit = 0
 
     -- generate initial terrain
