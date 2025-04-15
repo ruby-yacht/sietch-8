@@ -90,11 +90,12 @@ function _update()
     delta_time = current_time - last_time  -- Calculate delta time
     last_time = current_time  
 
-
-
+    -- WARNING: You're about to see a horrendous logic loop that hasn't changed much 
+    -- since its conception during a 1 week game jam. Because if isn't broke, why fix it?
     if gameStarted then
         if not gameOver then
             
+            -- Main loop functions go here
             local keyInput = ""
             update_players(delta_time)
             update_zombies(delta_time)
