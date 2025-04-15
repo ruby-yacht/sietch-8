@@ -15,7 +15,7 @@ function _init()
 
     -- level generation
     init_terrain_gen(10)
-    max_camera_distance = (BIOME_DIST.HELL + biome_length - 32) * 8
+    max_camera_distance = (BIOME_DIST_UNIT.HELL + biome_length - 32) * 8
 
     player = {
         x = 20, 

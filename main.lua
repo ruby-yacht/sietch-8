@@ -43,15 +43,45 @@ end
 
 chunk_generated_callback = function(chunk)
 
-    -- spawn zombies
-    local zombies_to_spawn = 2 -- should depend on the biome/distance
-    for i = 0, zombies_to_spawn do
-        -- get a random surface tile
-        local random_x_pos = flr(rnd(#chunk.surface_tiles)) + 1
-        local spawn_point = chunk.surface_tiles[random_x_pos]
-        spawn_zombie(spawn_point.x, spawn_point.y-1)
+
+    -- if chance succeeds, spawn 1-4 zombies. Chance and max zombie count depends on biome 
+    -- get biome
+    local biome = get_biome_at_unit(chunk.x_offset_unit+2) -- +2 because why not
+    local chance = 0
+    local zombies = 0
+    if biome == "GRASS" then
+        -- nothing
+    elseif biome == "DESERT" then
+        chance = .8
+        zombies = 1
+    elseif biome == "MOUNTAIN" then
+        chance = .5
+        zombies = 2
+    elseif biome == "SNOW" then
+        chance = .6
+        zombies = 2
+    elseif biome == "ORELAND" then -- oreland and hell need more difficult generation
+        chance = .5
+        zombies = 3
+    elseif biome == "HELL" then
+        chance = 1
+        zombies = 4
     end
 
+    -- get chance and determine zombie count
+
+    -- spawn zombies
+    if chance >= rnd(1) then
+        local zombies_to_spawn = flr(rnd(zombies))+1 -- should depend on the biome/distance
+        --printh("spawning " .. zombies_to_spawn .. " zombie(s)")  
+        for i = 1, zombies_to_spawn do
+            -- get a random surface tile
+            local random_x_pos = flr(rnd(#chunk.surface_tiles)) + 1
+            local spawn_point = chunk.surface_tiles[random_x_pos]
+            spawn_zombie(spawn_point.x, spawn_point.y-1)
+        end
+    end
+        
 end
 
 
