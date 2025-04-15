@@ -1,3 +1,8 @@
+-- TODO
+-- add debug visual to separate chunks
+-- add visual for zombie spawn point (or turn off ai and gravity?)
+
+
 poke(0x5F2D, 0x1) -- enable keyboard input
 
 local timeUntilCameraMoves = 1.5
@@ -30,7 +35,7 @@ function _init()
     init_terrain_gen(10)
     max_camera_distance = (map_x_size - 16) * 8
 
-    load_zombie_pool(2)
+    load_zombie_pool(4)
     --spawn_zombie(7,20)
 end
 
@@ -47,46 +52,37 @@ chunk_generated_callback = function(chunk)
     -- if chance succeeds, spawn 1-4 zombies. Chance and max zombie count depends on biome 
     -- get biome
     local biome = get_biome_at_unit(chunk.x_offset_unit+2) -- +2 because why not
-    local chance = 0
     local min_zombies = 0
     local max_zombies = 0
     if biome == "GRASS" then
         -- nothing
     elseif biome == "DESERT" then
-        chance = .8
         min_zombies = 1
         max_zombies = 1
     elseif biome == "MOUNTAIN" then
-        chance = .5
-        min_zombies = 1
+        min_zombies = 2
         max_zombies = 2
     elseif biome == "SNOW" then
-        chance = .6
         min_zombies = 2
         max_zombies = 3
     elseif biome == "ORELAND" then -- oreland and hell need more difficult generation
-        chance = .7
         min_zombies = 2
         max_zombies = 3
     elseif biome == "HELL" then
-        chance = 1
         min_zombies = 3
         max_zombies = 4
     end
 
-    -- get chance and determine zombie count
-
-    -- spawn zombies
-    if chance >= rnd(1) then
-        local zombies_to_spawn = flr(rnd(max_zombies-min_zombies))+min_zombies -- should depend on the biome/distance
-        --printh("spawning " .. zombies_to_spawn .. " zombie(s)")  
-        for i = 1, zombies_to_spawn do
-            -- get a random surface tile
-            local random_x_pos = flr(rnd(#chunk.surface_tiles)) + 1
-            local spawn_point = chunk.surface_tiles[random_x_pos]
-            spawn_zombie(spawn_point.x, spawn_point.y-1)
-        end
+    local zombies_to_spawn = flr(rnd(max_zombies-min_zombies))+min_zombies -- should depend on the biome/distance
+    --printh("spawning " .. zombies_to_spawn .. " zombie(s)")  
+    for i = 1, zombies_to_spawn do
+        --printh("spawning")
+        -- get a random surface tile
+        local random_x_pos = flr(rnd(#chunk.surface_tiles)) + 1
+        local spawn_point = chunk.surface_tiles[random_x_pos]
+        spawn_zombie(spawn_point.x, spawn_point.y-1)
     end
+
         
 end
 
