@@ -78,7 +78,7 @@ chunk_generated_callback = function(chunk)
 
     -- spawn zombies
     if chance >= rnd(1) then
-        local zombies_to_spawn = flr(rnd(min_zombies))+1 -- should depend on the biome/distance
+        local zombies_to_spawn = flr(rnd(max_zombies-min_zombies))+min_zombies -- should depend on the biome/distance
         --printh("spawning " .. zombies_to_spawn .. " zombie(s)")  
         for i = 1, zombies_to_spawn do
             -- get a random surface tile
