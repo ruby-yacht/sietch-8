@@ -7,7 +7,7 @@ poke(0x5F2D, 0x1) -- enable keyboard input
 
 local timeUntilCameraMoves = 1.5
 local timeUntilRestart = 2
-local debug = false
+local debug = true
 local victory = false
 local win_order = {}
 local delta_time
@@ -28,7 +28,7 @@ function _init()
     delta_time = 0
     timeUntilRestart = 2
     last_time = time()
-    victory = false
+    victory = true
     start_time = time()
 
     -- level generation
@@ -163,9 +163,9 @@ end
 
 function _draw()
     if victory then
-        cls(12)
-        draw_winners(camera_x, camera_y)
-
+        cls()
+        --draw_winners(camera_x, camera_y)
+        draw_score()
 
         
     else
@@ -191,10 +191,23 @@ function _draw()
 
         if (debug) then
             print("cpu usage: " .. stat(1) * 100 .. "%", camera_x,camera_y+8)
-            print("memory usage: " .. stat(0) .. "/2048 bytes bytes", camera_x,camera_y+16)
+            print("memory usage: " .. flr(stat(0)) .. "/2048 bytes bytes", camera_x,camera_y+16)
             print("frame rate: " .. stat(7), camera_x,camera_y+24)
         end  
     end      
+end
+
+function draw_score()
+    local score_spr_start = 128
+    local score_spr_end = 183
+    local spr_index = score_spr_start
+    camera(camera_x, camera_y)
+    print("\t\t\tthe end\n", camera_x, camera_y, 10)
+    --print("hop 63", camera_x + 10, camera_y+20, 10)
+    spr(spr_index, camera_x + 28, camera_y + 20)
+    spr(spr_index+1, camera_x + 36, camera_y + 20)
+    spr(spr_index+2, camera_x + 44, camera_y + 20)
+
 end
 
 function draw_winners(x, y)
