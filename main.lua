@@ -12,8 +12,9 @@ local victory = false
 local win_order = {}
 local delta_time
 local last_time
-
 local camera_speed = 15
+
+ufos = {}
 
 function _init()
     -- reset variables
@@ -37,6 +38,8 @@ function _init()
 
     load_zombie_pool(4)
     --spawn_zombie(7,20)
+    ufos[1] = UFO:new()
+    ufos[1]:enable(10,12)
 end
 
 function restart()
@@ -101,6 +104,7 @@ function _update()
             local keyInput = ""
             update_players(delta_time)
             update_zombies(delta_time)
+            ufos[1]:update(delta_time)
             update_respawns(delta_time)
             update_terrain_chunks(chunk_generated_callback)
             checkForOutOfBounds(camera_x - 16)
@@ -123,7 +127,7 @@ function _update()
             else
                 if not victory then
                     -- Update camera position 
-                    camera_x = min(camera_x + camera_speed * delta_time, max_camera_distance)
+                    --camera_x = min(camera_x + camera_speed * delta_time, max_camera_distance)
                     if camera_x >= max_camera_distance then
                         victory = true
 
@@ -171,6 +175,7 @@ function _draw()
     else
         cls()
         draw_zombies()
+        ufos[1]:draw()
         draw_players(gameStarted)
         draw_respawn_birds()
         draw_terrain()
@@ -191,7 +196,7 @@ function _draw()
 
         if (debug) then
             print("cpu usage: " .. stat(1) * 100 .. "%", camera_x,camera_y+8)
-            print("memory usage: " .. stat(0) .. "/2048 bytes bytes", camera_x,camera_y+16)
+            print("memory usage: " .. flr(stat(0)) .. "/2048 bytes bytes", camera_x,camera_y+16)
             print("frame rate: " .. stat(7), camera_x,camera_y+24)
         end  
     end      

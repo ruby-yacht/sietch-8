@@ -311,6 +311,21 @@ function get_tile_at_pos(x, y)
     return get_tile(flr(x / 8) , flr(y / 8))
 end
 
+function get_surface_tile_at_pos(x_pos)
+    local x = x_pos / 8
+    for y = 1, map_y_size-1 do 
+
+        local above_tile = get_tile(x,y-1)
+        local target_tile = get_tile(x,y)
+
+        if above_tile.tile == TILE.NONE and target_tile.tile ~= TILE.NONE then
+            return target_tile
+        end
+        
+    end
+
+end
+
 function check_collision(new_x, new_y, x,y, hit_wall_callback)
     -- convert world positions to grid positions
     local new_x_unit = new_x / 8
