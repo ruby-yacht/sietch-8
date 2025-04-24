@@ -148,6 +148,13 @@ function update_players(dt)
             end
 
         end
+
+        -- Check for ufo collisions
+        for _, ufo in ipairs(ufos) do
+            if ufo.state == 3 and check_object_collision(player, ufo) then
+                ufo:attractPlayer(player, dt)
+            end
+        end
     end
 end
 

@@ -5,7 +5,7 @@ chunks = {} -- 2 or 3 chunk tables
 local TERRAIN_Y_OFFSET = 0
 
 biome_length = 48
-BIOME_DIST = {
+BIOME_DIST_UNIT = {
     GRASS = 0,
     DESERT = 0,
     MOUNTAIN = 0,
@@ -17,7 +17,7 @@ BIOME_DIST = {
 map_x_size = 0
 map_y_size = 32
 local chunk_x_size = 16
-local hole_width = 3
+local hole_width = 2
 local new_chunk_threshold = 128
 local chunk_start_unit = 0
 local draw_hole_chance = .5
@@ -91,17 +91,17 @@ function generate_terrain_chunk(x_offset_unit)
     for x = x_offset_unit, x_offset_unit+chunk_x_size-1 do
         chunk.tiles[x] = {}
         for y = 0, map_y_size-1 do -- this creates 31 tiles FYI   
-            if x < BIOME_DIST.GRASS then
+            if x < BIOME_DIST_UNIT.GRASS then
                 chunk.tiles[x][y] = {x = x, y = y, tile = TILE.GROUND}
-            elseif x < BIOME_DIST.DESERT then
+            elseif x < BIOME_DIST_UNIT.DESERT then
                 chunk.tiles[x][y] = {x = x, y = y, tile = TILE.SAND_1}
-            elseif x < BIOME_DIST.MOUNTAIN then
+            elseif x < BIOME_DIST_UNIT.MOUNTAIN then
                 chunk.tiles[x][y] = {x = x, y = y, tile = TILE.MOUNTAIN_2}
-            elseif x < BIOME_DIST.SNOW then
+            elseif x < BIOME_DIST_UNIT.SNOW then
                 chunk.tiles[x][y] = {x = x, y = y, tile = TILE.SNOW_2}
-            elseif x < BIOME_DIST.ORELAND then
+            elseif x < BIOME_DIST_UNIT.ORELAND then
                 chunk.tiles[x][y] = {x = x, y = y, tile = TILE.ORELAND_1}
-            elseif x < BIOME_DIST.HELL then
+            elseif x < BIOME_DIST_UNIT.HELL then
                 chunk.tiles[x][y] = {x = x, y = y, tile = TILE.HELL_2}
             else
                 chunk.tiles[x][y] = {x = x, y = y, tile = TILE.GROUND}
@@ -149,17 +149,17 @@ function generate_terrain_chunk(x_offset_unit)
             if above_tile.tile == TILE.NONE and target_tile.tile ~= TILE.NONE then
                 add(chunk.surface_tiles, target_tile)
 
-                if x < BIOME_DIST.GRASS then
+                if x < BIOME_DIST_UNIT.GRASS then
                     target_tile.tile = TILE.GRASS
-                elseif x < BIOME_DIST.DESERT then
+                elseif x < BIOME_DIST_UNIT.DESERT then
                     --target_tile.tile = TILE.GRASS
-                elseif x < BIOME_DIST.MOUNTAIN then
+                elseif x < BIOME_DIST_UNIT.MOUNTAIN then
                     target_tile.tile = TILE.MOUNTAIN_1
-                elseif x < BIOME_DIST.SNOW then
+                elseif x < BIOME_DIST_UNIT.SNOW then
                     --target_tile.tile = TILE.GRASS
-                elseif x < BIOME_DIST.ORELAND then
+                elseif x < BIOME_DIST_UNIT.ORELAND then
                     --target_tile.tile = TILE.GRASS
-                elseif x < BIOME_DIST.HELL then
+                elseif x < BIOME_DIST_UNIT.HELL then
                     --target_tile.tile = TILE.GRASS
                 else
                     --target_tile.tile = TILE.GRASS
@@ -177,29 +177,29 @@ function set_biome_distances()
 
     local cumulative_dist = 0
 
-    BIOME_DIST.GRASS = biome_length + cumulative_dist
-    cumulative_dist = BIOME_DIST.GRASS
-    BIOME_DIST.DESERT = biome_length + cumulative_dist
-    cumulative_dist = BIOME_DIST.DESERT
-    BIOME_DIST.MOUNTAIN = biome_length + cumulative_dist
-    cumulative_dist = BIOME_DIST.MOUNTAIN
-    BIOME_DIST.SNOW = biome_length + cumulative_dist
-    cumulative_dist = BIOME_DIST.SNOW
-    BIOME_DIST.ORELAND = biome_length + cumulative_dist
-    cumulative_dist = BIOME_DIST.ORELAND
-    BIOME_DIST.HELL = biome_length + cumulative_dist
-    cumulative_dist = BIOME_DIST.HELL
+    BIOME_DIST_UNIT.GRASS = biome_length + cumulative_dist
+    cumulative_dist = BIOME_DIST_UNIT.GRASS
+    BIOME_DIST_UNIT.DESERT = biome_length + cumulative_dist
+    cumulative_dist = BIOME_DIST_UNIT.DESERT
+    BIOME_DIST_UNIT.MOUNTAIN = biome_length + cumulative_dist
+    cumulative_dist = BIOME_DIST_UNIT.MOUNTAIN
+    BIOME_DIST_UNIT.SNOW = biome_length + cumulative_dist
+    cumulative_dist = BIOME_DIST_UNIT.SNOW
+    BIOME_DIST_UNIT.ORELAND = biome_length + cumulative_dist
+    cumulative_dist = BIOME_DIST_UNIT.ORELAND
+    BIOME_DIST_UNIT.HELL = biome_length + cumulative_dist
+    cumulative_dist = BIOME_DIST_UNIT.HELL
 
-    map_x_size = BIOME_DIST.HELL
+    map_x_size = BIOME_DIST_UNIT.HELL
 end
 
 function get_cell_height_at_(x)
 
-    if x <= BIOME_DIST.GRASS then
+    if x <= BIOME_DIST_UNIT.GRASS then
         return biome_grass_height_at_(x)
-    elseif x <= BIOME_DIST.DESERT then
+    elseif x <= BIOME_DIST_UNIT.DESERT then
         return biome_desert_height_at_(x)
-    elseif x <= BIOME_DIST.MOUNTAIN then
+    elseif x <= BIOME_DIST_UNIT.MOUNTAIN then
         return biome_mountain_height_at_(x)
     else
         return biome_grass_height_at_(x)
@@ -311,6 +311,21 @@ function get_tile_at_pos(x, y)
     return get_tile(flr(x / 8) , flr(y / 8))
 end
 
+function get_surface_tile_at_pos(x_pos)
+    local x = x_pos / 8
+    for y = 1, map_y_size-1 do 
+
+        local above_tile = get_tile(x,y-1)
+        local target_tile = get_tile(x,y)
+
+        if above_tile.tile == TILE.NONE and target_tile.tile ~= TILE.NONE then
+            return target_tile
+        end
+        
+    end
+
+end
+
 function check_collision(new_x, new_y, x,y, hit_wall_callback)
     -- convert world positions to grid positions
     local new_x_unit = new_x / 8
@@ -343,4 +358,22 @@ function check_collision(new_x, new_y, x,y, hit_wall_callback)
     new_y = new_y_unit * 8
 
     return {x = new_x, y = new_y, onGround = onGround, hit_wall = hit_wall} -- this is returning nil for some reason
+end
+
+function get_biome_at_unit(x)
+    --x = x / 8
+
+    if x < BIOME_DIST_UNIT.GRASS then
+        return "GRASS"
+    elseif x < BIOME_DIST_UNIT.DESERT then
+        return "DESERT"
+    elseif x < BIOME_DIST_UNIT.MOUNTAIN then
+        return "MOUNTAIN"
+    elseif x < BIOME_DIST_UNIT.SNOW then
+        return "SNOW"
+    elseif x < BIOME_DIST_UNIT.ORELAND then
+        return "ORELAND"
+    else
+        return "HELL"
+    end  
 end

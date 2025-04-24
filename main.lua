@@ -1,3 +1,8 @@
+-- TODO
+-- add debug visual to separate chunks
+-- add visual for zombie spawn point (or turn off ai and gravity?)
+
+
 poke(0x5F2D, 0x1) -- enable keyboard input
 
 local timeUntilCameraMoves = 1.5
@@ -7,8 +12,9 @@ local victory = false
 local win_order = {}
 local delta_time
 local last_time
-
 local camera_speed = 15
+
+ufos = {}
 
 function _init()
     -- reset variables
@@ -30,8 +36,10 @@ function _init()
     init_terrain_gen(10)
     max_camera_distance = (map_x_size - 16) * 8
 
-    load_zombie_pool(2)
+    load_zombie_pool(4)
     --spawn_zombie(7,20)
+    ufos[1] = UFO:new()
+    ufos[1]:enable(10,12)
 end
 
 function restart()
@@ -43,15 +51,42 @@ end
 
 chunk_generated_callback = function(chunk)
 
-    -- spawn zombies
-    local zombies_to_spawn = 2 -- should depend on the biome/distance
-    for i = 0, zombies_to_spawn do
+
+    -- if chance succeeds, spawn 1-4 zombies. Chance and max zombie count depends on biome 
+    -- get biome
+    local biome = get_biome_at_unit(chunk.x_offset_unit+2) -- +2 because why not
+    local min_zombies = 0
+    local max_zombies = 0
+    if biome == "GRASS" then
+        -- nothing
+    elseif biome == "DESERT" then
+        min_zombies = 1
+        max_zombies = 1
+    elseif biome == "MOUNTAIN" then
+        min_zombies = 2
+        max_zombies = 2
+    elseif biome == "SNOW" then
+        min_zombies = 2
+        max_zombies = 3
+    elseif biome == "ORELAND" then -- oreland and hell need more difficult generation
+        min_zombies = 2
+        max_zombies = 3
+    elseif biome == "HELL" then
+        min_zombies = 3
+        max_zombies = 4
+    end
+
+    local zombies_to_spawn = flr(rnd(max_zombies-min_zombies))+min_zombies -- should depend on the biome/distance
+    --printh("spawning " .. zombies_to_spawn .. " zombie(s)")  
+    for i = 1, zombies_to_spawn do
+        --printh("spawning")
         -- get a random surface tile
         local random_x_pos = flr(rnd(#chunk.surface_tiles)) + 1
         local spawn_point = chunk.surface_tiles[random_x_pos]
         spawn_zombie(spawn_point.x, spawn_point.y-1)
     end
 
+        
 end
 
 
@@ -60,14 +95,16 @@ function _update()
     delta_time = current_time - last_time  -- Calculate delta time
     last_time = current_time  
 
-
-
+    -- WARNING: You're about to see a horrendous logic loop that hasn't changed much 
+    -- since its conception during a 1 week game jam. Because if isn't broke, why fix it?
     if gameStarted then
         if not gameOver then
             
+            -- Main loop functions go here
             local keyInput = ""
             update_players(delta_time)
             update_zombies(delta_time)
+            ufos[1]:update(delta_time)
             update_respawns(delta_time)
             update_terrain_chunks(chunk_generated_callback)
             checkForOutOfBounds(camera_x - 16)
@@ -90,7 +127,7 @@ function _update()
             else
                 if not victory then
                     -- Update camera position 
-                    camera_x = min(camera_x + camera_speed * delta_time, max_camera_distance)
+                    --camera_x = min(camera_x + camera_speed * delta_time, max_camera_distance)
                     if camera_x >= max_camera_distance then
                         victory = true
 
@@ -138,6 +175,7 @@ function _draw()
     else
         cls()
         draw_zombies()
+        ufos[1]:draw()
         draw_players(gameStarted)
         draw_respawn_birds()
         draw_terrain()
@@ -158,7 +196,7 @@ function _draw()
 
         if (debug) then
             print("cpu usage: " .. stat(1) * 100 .. "%", camera_x,camera_y+8)
-            print("memory usage: " .. stat(0) .. "/2048 bytes bytes", camera_x,camera_y+16)
+            print("memory usage: " .. flr(stat(0)) .. "/2048 bytes bytes", camera_x,camera_y+16)
             print("frame rate: " .. stat(7), camera_x,camera_y+24)
         end  
     end      
