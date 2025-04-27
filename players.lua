@@ -147,11 +147,26 @@ function update_players(dt)
                 end
             end
 
+            for _, ufo in ipairs(ufos) do
+                if check_object_collision(player, ufo) then
+                    // if colliding with top of ufo, bounce
+                    if check_object_collision_on_top(player, ufo) then
+
+                        ufo:releasePlayer()
+
+                        player.y = ufo.y-8  -- best way to guarantee this code runs once
+                        player.vy = player.bounce_force
+                        player.vx = maxBounceRange
+                        player.bounce_force = minBounceForce
+                    end
+                end
+            end
+
         end
 
         -- Check for ufo collisions
         for _, ufo in ipairs(ufos) do
-            if ufo.state == 3 and check_object_collision(player, ufo) then
+            if ufo.state == 3 and check_object_collision(player, ufo.tracker_beam) then
                 ufo:attractPlayer(player, dt)
             end
         end
@@ -250,10 +265,24 @@ function check_object_collision(a, b)
     local a_edges = get_edges(a)
     local b_edges = get_edges(b)
     
+    -- can we return the edge that collides?
+    -- ufo would also have to be ignored after it bounces...
+
     return a_edges.left < b_edges.right and
            a_edges.right > b_edges.left and
            a_edges.top < b_edges.bottom and
            a_edges.bottom > b_edges.top
+end
+
+-- actor collision
+function check_object_collision_on_top(a, b)
+    local a_edges = get_edges(a)
+    local b_edges = get_edges(b)
+    
+
+     -- super janky here. I should figure out how to properly do this
+     return a_edges.bottom > b_edges.top and a.y < b.y and a.vy > 0
+        
 end
 
 function get_edges(obj)
