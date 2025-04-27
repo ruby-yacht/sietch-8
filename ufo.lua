@@ -4,7 +4,8 @@ local SPEED = 500
 local MIN_SPEED = 50
 local MAX_SPEED = 65 -- camera speed is 15
 local HOVER_DOWN_SPEED = 30
-local debug = true
+local debug = false
+local players_can_release_others = false
 
 function UFO:new() -- there can only be one
 
@@ -23,7 +24,7 @@ function UFO:new() -- there can only be one
         active = false,
         ai_enabled = false,
         move_dir = -1,
-        state = 2,
+        state = 1,
         search_timer = 5,
         capture_tracker = {},
         capture_timer = 5,
@@ -51,6 +52,7 @@ function UFO:enable(x,y)
     self.active = true
     self.ai_enabled = true
     self.search_timer = 5 + flr(rnd(5))
+
 end
 
 function UFO:disable()
@@ -58,16 +60,17 @@ function UFO:disable()
     self.y = 0
     self.active = false
     self.ai_enabled = false
+
+    for index, value in ipairs(self.capture_tracker) do
+        self.releasePlayer()
+    end
+
+    self.ignoreList = {}
 end
 
 function UFO:update(dt)
 
-    if self.x + 8 < camera_x 
-    or self.x > camera_x + 200 
-    or self.y < camera_y  
-    or self.y > camera_y + 200 then
-        self:disable()
-    end
+
 
 
     if self.active and self.ai_enabled then
@@ -79,6 +82,14 @@ function UFO:update(dt)
 
         -- jumping on self acts like a platform (or bounces them off?)
         -- and releases one player
+
+        if self.x + 8 < camera_x 
+        or self.x > camera_x + 200 
+        or self.y < camera_y  
+        or self.y > camera_y + 200 then
+            --self:disable()
+            printh("ufo out of bounds!") -- to handle this, it should travel to inbounds
+        end
 
         if self.state == 1 then
             
@@ -98,7 +109,7 @@ function UFO:update(dt)
 
             self.search_timer = max(self.search_timer - dt, 0)
 
-            if self.search_timer == 0 then
+            if self.search_timer == 0 and self.x > camera_x + 100 then
                 self.vx = 0
                 self.state = 2
             end

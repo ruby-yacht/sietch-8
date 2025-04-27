@@ -13,6 +13,7 @@ local win_order = {}
 local delta_time
 local last_time
 local camera_speed = 15
+local ufo_spawn_locations = {}
 
 ufos = {}
 
@@ -36,10 +37,17 @@ function _init()
     init_terrain_gen(10)
     max_camera_distance = (map_x_size - 16) * 8
 
+    ufo_spawn_locations = {
+        (BIOME_DIST_UNIT.DESERT) - (biome_length / 2),
+        (BIOME_DIST_UNIT.ORELAND) - (biome_length),
+        (BIOME_DIST_UNIT.ORELAND) - (biome_length * .9) -- this could go wrong
+    }
+
     load_zombie_pool(4)
     --spawn_zombie(7,20)
     ufos[1] = UFO:new()
-    ufos[1]:enable(10,12)
+    --ufos[1]:enable(10,12)
+    --ufos[1]:disable()
 end
 
 function restart()
@@ -57,6 +65,7 @@ chunk_generated_callback = function(chunk)
     local biome = get_biome_at_unit(chunk.x_offset_unit+2) -- +2 because why not
     local min_zombies = 0
     local max_zombies = 0
+
     if biome == "GRASS" then
         -- nothing
     elseif biome == "DESERT" then
@@ -86,6 +95,11 @@ chunk_generated_callback = function(chunk)
         spawn_zombie(spawn_point.x, spawn_point.y-1)
     end
 
+    for index, ufo_spawn_position in ipairs(ufo_spawn_locations) do
+        if ufo_spawn_position > chunk.x_offset_unit and ufo_spawn_position <= chunk.x_offset_unit + chunk_x_size then
+            ufos[1]:enable(ufo_spawn_position,12)
+        end
+    end
         
 end
 
@@ -127,7 +141,8 @@ function _update()
             else
                 if not victory then
                     -- Update camera position 
-                    --camera_x = min(camera_x + camera_speed * delta_time, max_camera_distance)
+                    camera_x = min(camera_x + camera_speed * delta_time, max_camera_distance)
+                    --printh(camera_x)
                     if camera_x >= max_camera_distance then
                         victory = true
 
@@ -174,6 +189,7 @@ function _draw()
         
     else
         cls()
+        map(0,0,0,camera_y,128,16) -- make this repeatable
         draw_zombies()
         ufos[1]:draw()
         draw_players(gameStarted)

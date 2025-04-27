@@ -16,7 +16,7 @@ BIOME_DIST_UNIT = {
 
 map_x_size = 0
 map_y_size = 32
-local chunk_x_size = 16
+chunk_x_size = 16
 local hole_width = 2
 local new_chunk_threshold = 128
 local chunk_start_unit = 0

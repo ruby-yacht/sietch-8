@@ -152,7 +152,9 @@ function update_players(dt)
                     // if colliding with top of ufo, bounce
                     if check_object_collision_on_top(player, ufo) then
 
-                        ufo:releasePlayer()
+                        if players_can_release_others then
+                            ufo:releasePlayer()
+                        end
 
                         player.y = ufo.y-8  -- best way to guarantee this code runs once
                         player.vy = player.bounce_force
