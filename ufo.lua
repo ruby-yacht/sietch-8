@@ -49,6 +49,9 @@ end
 function UFO:enable(x,y)
     self.x = x * 8
     self.y = y * 8
+    self.vx = 0
+    self.vy = 0
+    self.state = 1
     self.active = true
     self.ai_enabled = true
     self.search_timer = 5 + flr(rnd(5))
@@ -117,13 +120,16 @@ function UFO:update(dt)
 
         elseif self.state == 2 then
             local tile = get_surface_tile_at_pos(self.x)
-
-            if self.y < (tile.y - 6) * 8 then
-                self.vy = HOVER_DOWN_SPEED
-            else
-                self.vy = 0
-                self.state = 3
-                self.capture_timer = 5
+            if (tile) then
+                
+                
+                if self.y < (tile.y - 6) * 8 then
+                    self.vy = HOVER_DOWN_SPEED
+                else
+                    self.vy = 0
+                    self.state = 3
+                    self.capture_timer = 5
+                end
             end
         
         elseif self.state == 3 then

@@ -39,8 +39,8 @@ function _init()
 
     ufo_spawn_locations = {
         (BIOME_DIST_UNIT.DESERT) - (biome_length / 2),
-        (BIOME_DIST_UNIT.ORELAND) - (biome_length),
-        (BIOME_DIST_UNIT.ORELAND) - (biome_length * .9) -- this could go wrong
+        (BIOME_DIST_UNIT.SNOW) - (biome_length/2),
+        (BIOME_DIST_UNIT.ORELAND) - (biome_length/2) -- this could go wrong
     }
 
     load_zombie_pool(4)
@@ -59,13 +59,12 @@ end
 
 chunk_generated_callback = function(chunk)
 
-
     -- if chance succeeds, spawn 1-4 zombies. Chance and max zombie count depends on biome 
     -- get biome
     local biome = get_biome_at_unit(chunk.x_offset_unit+2) -- +2 because why not
     local min_zombies = 0
     local max_zombies = 0
-
+    
     if biome == "GRASS" then
         -- nothing
     elseif biome == "DESERT" then
@@ -84,7 +83,7 @@ chunk_generated_callback = function(chunk)
         min_zombies = 3
         max_zombies = 4
     end
-
+    
     local zombies_to_spawn = flr(rnd(max_zombies-min_zombies))+min_zombies -- should depend on the biome/distance
     --printh("spawning " .. zombies_to_spawn .. " zombie(s)")  
     for i = 1, zombies_to_spawn do
@@ -94,9 +93,10 @@ chunk_generated_callback = function(chunk)
         local spawn_point = chunk.surface_tiles[random_x_pos]
         spawn_zombie(spawn_point.x, spawn_point.y-1)
     end
-
+    
     for index, ufo_spawn_position in ipairs(ufo_spawn_locations) do
         if ufo_spawn_position > chunk.x_offset_unit and ufo_spawn_position <= chunk.x_offset_unit + chunk_x_size then
+            printh(ufo_spawn_position)
             ufos[1]:enable(ufo_spawn_position,12)
         end
     end
@@ -116,7 +116,8 @@ function _update()
             
             -- Main loop functions go here
             local keyInput = ""
-            update_players(delta_time)
+            --update_players(delta_time)
+            update_players_testmode(delta_time)
             update_zombies(delta_time)
             ufos[1]:update(delta_time)
             update_respawns(delta_time)
@@ -170,8 +171,16 @@ function _update()
         end
     elseif victory then -- super hacky
         -- Process key input
-        while stat(30) do
-            keyInput = stat(31)
+        --[[
+            while stat(30) do
+                printh("end")
+                keyInput = stat(31)
+                restart()
+            end
+            ]]
+
+        if stat(31) == "\32" and get_player_count() > 0 then 
+            printh("end")
             restart()
         end
     else

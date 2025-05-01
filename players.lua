@@ -175,6 +175,51 @@ function update_players(dt)
     end
 end
 
+function update_players_testmode(dt)
+    for key, player in pairs(players) do
+        if player.disabled == false then
+
+            camera_x = player.x - 56
+            --camera_y = player.y + 64
+
+            player.vx = 0
+            player.vy = 0
+
+            if btn(0) then
+                player.vx -= 2
+            end
+            
+            if btn(1) then
+                player.vx += 2
+            end
+            
+            if btn(2) then
+                player.vy -= 2
+            end
+            
+            if btn(3) then
+                player.vy += 2
+            end
+
+            while stat(30) do
+                keyInput = stat(31)
+                if keyInput == "t" then
+                    testmode = false
+                end        
+            end
+
+            local player_new_x = player.x + player.vx
+            local player_new_y = player.y + player.vy
+
+            checked_position = check_collision(player_new_x, player_new_y, player.x, player.y)
+
+            player.x = checked_position.x
+            player.y = checked_position.y
+        end
+    end
+    
+end
+
 -- WIP
 function update_player_obj_collisions()
     for key, player in pairs(players) do

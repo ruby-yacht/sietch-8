@@ -45,7 +45,7 @@ function _update()
     update_terrain_chunks()
 
     if testmode then
-        test_mode()
+        update_players_testmode()
     else
         hop_mode()
     end
@@ -66,7 +66,7 @@ function _draw()
 
 end
 
-function test_mode()
+function update_players_testmode()
     
     camera_x = player.x - 56
     --camera_y = player.y + 64
