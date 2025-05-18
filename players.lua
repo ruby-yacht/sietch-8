@@ -186,20 +186,22 @@ function update_players_testmode(dt)
             player.vx = 0
             player.vy = 0
 
+            local speed = 10
+
             if btn(0) then
-                player.vx -= 2
+                player.vx -= speed
             end
             
             if btn(1) then
-                player.vx += 2
+                player.vx += speed
             end
             
             if btn(2) then
-                player.vy -= 2
+                player.vy -= speed
             end
             
             if btn(3) then
-                player.vy += 2
+                player.vy += speed
             end
 
             while stat(30) do

@@ -126,7 +126,8 @@ function generate_terrain_chunk(x_offset_unit)
     end
     
     -- draw a holes randomly
-    if x_offset_unit > 0 and rnd(1) >= 1-draw_hole_chance then
+    -- don't draw holes in the last two chunks
+    if x_offset_unit > 0 and x_offset_unit < (map_x_size-32) and rnd(1) >= 1-draw_hole_chance then
         local random_x_pos = flr(rnd(chunk_x_size-hole_width))
         local hole_start = x_offset_unit + random_x_pos
 

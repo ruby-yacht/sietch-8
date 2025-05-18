@@ -116,8 +116,8 @@ function _update()
             
             -- Main loop functions go here
             local keyInput = ""
-            update_players(delta_time)
-            --update_players_testmode(delta_time)
+            --update_players(delta_time)
+            update_players_testmode(delta_time)
             update_zombies(delta_time)
             ufos[1]:update(delta_time)
             update_respawns(delta_time)
@@ -200,10 +200,11 @@ function _draw()
         cls()
         map(0,0,0,camera_y,128,16) -- make this repeatable
         draw_zombies()
+        draw_terrain()
+        map(0,0,max_camera_distance,camera_y-128,16,128) -- put this at the end of the map
         ufos[1]:draw()
         draw_players(gameStarted)
         draw_respawn_birds()
-        draw_terrain()
         camera(camera_x, camera_y)
 
         if gameStarted then
