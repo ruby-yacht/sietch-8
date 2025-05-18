@@ -209,8 +209,8 @@ function _draw()
         if gameStarted then
 
         else
-            rectfill(camera_x, 0, 64, camera_x + 8, camera_y)
-            print("press any key to add a player", camera_x, camera_y, 7)
+            rectfill(camera_x, 0, camera_x + 128, camera_y + 8, camera_y)
+            print("press any button to join", camera_x, camera_y, 7)
             print("\^w\^thop" .. get_player_count(), camera_x + 46,camera_y + 56)
         end
 

@@ -53,7 +53,8 @@ function initPlayers()
         
 
         if not (keyInput == "\32") and not (keyInput == "\13") and not (keyInput == "\112") and not players[keyInput] and currentPlayerCount <= 32 then 
-            local sprite = sprites[playerCount % #sprites + 1]
+            --local sprite = sprites[playerCount % #sprites + 1]
+            local sprite = player_sprite_index[keyInput]
             players[keyInput] = {
                 x = 8 + posx + start_position, 
                 y = 8 + posy + camera_y, 

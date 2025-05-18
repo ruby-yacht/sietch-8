@@ -2,7 +2,7 @@ pico-8 cartridge // http://www.pico-8.com
 version 42
 __lua__
 #include helper.lua
-
+#include playerspriteindex.lua
 #include proceduralgen.lua
 #include zombies.lua
 #include ufo.lua
