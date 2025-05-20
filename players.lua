@@ -252,6 +252,7 @@ function bouncePlayer(key)
         player.vy = player.bounce_force
         player.vx = maxBounceRange
         player.bounce_force = minBounceForce
+        sfx(0)
     end
 end
 
