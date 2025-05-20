@@ -14,6 +14,8 @@ local delta_time
 local last_time
 local camera_speed = 15
 local ufo_spawn_locations = {}
+local victory_timer
+local score_timer
 
 ufos = {}
 
@@ -31,6 +33,8 @@ function _init()
     timeUntilRestart = 2
     last_time = time()
     victory = false
+    victory_timer = 5
+    score_timer = 15
     start_time = time()
 
     -- level generation
@@ -144,19 +148,27 @@ function _update()
                     -- Update camera position 
                     camera_x = min(camera_x + camera_speed * delta_time, max_camera_distance)
                     --printh(camera_x)
-                    if camera_x >= max_camera_distance then
-                        victory = true
+                    if camera_x >= max_camera_distance then -- add timer here
+                    
+                        if victory_timer > 0 then
+                            victory_timer -= delta_time
+                        else
+                            victory = true
 
-                        for key, player in pairs(players) do
-                            if player.disabled == false then
-                                add(win_order, {player.sprite, player.disabledCount, player.totalTimeEnabled})
+                            for key, player in pairs(players) do
+                                if player.disabled == false then
+                                    add(win_order, {player.sprite, player.disabledCount, player.totalTimeEnabled})
+                                end
                             end
+    
+                            appendLosersToWinOrder()
+    
+                            gameStarted = false
+    
+
                         end
-
-                        appendLosersToWinOrder()
-
-                        gameStarted = false
-
+                    
+                       
                     end
                 end
             end
@@ -178,8 +190,9 @@ function _update()
                 restart()
             end
             ]]
+        score_timer -= delta_time
 
-        if stat(31) == "\32" and get_player_count() > 0 then 
+        if score_timer <= 0 or stat(31) == "\32" and get_player_count() > 0 then 
             printh("end")
             restart()
         end
@@ -236,7 +249,7 @@ function draw_winners(x, y)
 
     
     -- Print header
-    print("\t\t\t  survivors\n", x, current_y, 10)
+    print("\t\t\tsurvivors\n", x, current_y, 10)
     current_y = current_y + line_height
     leftCounter = 0
     for i = 1, #win_order do
@@ -249,6 +262,8 @@ function draw_winners(x, y)
         leftCounter = (leftCounter + 1) % 4
         --end
     end
+
+    print("\t\t\tcontinue in " .. flr(score_timer) .. "\n", x-2, current_y+ 110, 10)
 end
 
 function appendLosersToWinOrder()

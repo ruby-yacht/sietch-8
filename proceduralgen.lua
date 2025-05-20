@@ -281,7 +281,8 @@ end
 
 function get_tile(x, y)
     if x < 0 or x >= map_x_size or y < 0 or y >= map_y_size then
-        printh("(" .. x .. "," .. y .. ") tile index is out of bounds")
+        --printh("(" .. x .. "," .. y .. ") tile index is out of bounds")
+        -- for some reason, get_tile calls in out of bounds (x 298-303) spike when player reaches the end.
         return {tile = -1}
     else
 
