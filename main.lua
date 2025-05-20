@@ -212,6 +212,8 @@ function _draw()
     else
         cls()
         map(0,0,0,camera_y,128,16) -- make this repeatable
+        map(0,0,1024,camera_y,128,16) -- make this repeatable
+        map(0,0,2048,camera_y,128,16) -- make this repeatable
         draw_zombies()
         draw_terrain()
         map(0,0,max_camera_distance,camera_y-128,16,128) -- put this at the end of the map
@@ -245,8 +247,6 @@ function draw_winners(x, y)
     local indent = ""
     local line_height = 10
     local current_y = y
-
-
     
     -- Print header
     print("\t\t\tsurvivors\n", x, current_y, 10)
