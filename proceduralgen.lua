@@ -202,6 +202,12 @@ function get_cell_height_at_(x)
         return biome_desert_height_at_(x)
     elseif x <= BIOME_DIST_UNIT.MOUNTAIN then
         return biome_mountain_height_at_(x)
+    elseif x <= BIOME_DIST_UNIT.SNOW then
+        return biome_grass_height_at_(x)
+    elseif x <= BIOME_DIST_UNIT.ORELAND then
+        return biome_oreland_height_at_(x)
+    elseif x <= BIOME_DIST_UNIT.HELL then
+        return biome_hell_height_at_(x)
     else
         return biome_grass_height_at_(x)
     end
@@ -219,6 +225,15 @@ end
 function biome_mountain_height_at_(x) -- raise ground level?
     return sin( ((x-1) / 16)) + 4 * sin( ((x-1) / 16) * 1.5)
 end
+
+function biome_oreland_height_at_(x)
+    return sin( ((x-1) / 16)) + 2 * sin( ((x-1) / 20) * 3.5)
+end
+
+function biome_hell_height_at_(x)
+    return sin( ((x-1) / 8)) + 1.2 * sin( ((x-1) / 16) * 6.5)
+end
+
 
 function draw_holes()
     local hole_width = 3

@@ -124,8 +124,8 @@ function _update()
             
             -- Main loop functions go here
             local keyInput = ""
-            update_players(delta_time)
-            --update_players_testmode(delta_time)
+            --update_players(delta_time)
+            update_players_testmode(delta_time)
             update_zombies(delta_time)
             ufos[1]:update(delta_time)
             update_respawns(delta_time)

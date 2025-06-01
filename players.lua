@@ -6,10 +6,10 @@ local BOUNCE_FACTOR = -8  -- Factor to bounce back after collision
 players = {}
 playerCount = 0
 local playerWonCount = 0
-local minBounceForce = -90
-local maxBounceForce = -350
+local minBounceForce = -60
+local maxBounceForce = -250
 local maxBounceRange = 28
-local bounceChargeRate = 2
+local bounceChargeRate = 2.4
 local maxPlayers = 32
 local maxFallVelocity = 100
 disabledPlayerCount = 0
@@ -102,10 +102,9 @@ function initPlayers()
         end
 
         
-        printh(start_timer)
 
         -- exit player selection and start the game
-        if start_timer <= 0 or (keyInput == "\32" and get_player_count() > 0) then 
+        if (keyInput == "\32" and get_player_count() > 0) then 
             local timeDelay = min(10, 2 + ((1-(playerCount/32)) * 10))
             respawnTimer = timer(timeDelay)
             return true
@@ -173,7 +172,7 @@ function update_players(dt)
                         end
 
                         player.y = ufo.y-8  -- best way to guarantee this code runs once
-                        player.vy = player.bounce_force
+                        player.vy = player.bounce_force + 60
                         player.vx = maxBounceRange
                         player.bounce_force = minBounceForce
                     end

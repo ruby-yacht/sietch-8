@@ -112,7 +112,7 @@ function UFO:update(dt)
 
             self.search_timer = max(self.search_timer - dt, 0)
 
-            if self.search_timer == 0 and self.x > camera_x + 100 then
+            if self.search_timer == 0 and self.x > camera_x + 70 then
                 self.vx = 0
                 self.state = 2
             end
@@ -123,7 +123,7 @@ function UFO:update(dt)
             if (tile) then
                 
                 
-                if self.y < (tile.y - 6) * 8 then
+                if self.y < (tile.y - 4) * 8 then
                     self.vy = HOVER_DOWN_SPEED
                 else
                     self.vy = 0
@@ -231,6 +231,12 @@ end
 
 function UFO:draw()
     if self.active then
+        
+
+        if self.state == 3 or self.state == 4 then
+            spr(self.sprite2, self.x, self.y+6)
+        end
+
         spr(self.sprite, self.x, self.y)
 
         if debug then
