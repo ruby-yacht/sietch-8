@@ -17,6 +17,7 @@ local ufo_spawn_locations = {}
 local victory_timer
 local score_timer
 
+
 ufos = {}
 
 function _init()
@@ -36,6 +37,9 @@ function _init()
     victory_timer = 5
     score_timer = 15
     start_time = time()
+    start_timer = 5 -- for initPlayers
+    votesToStart = 0
+    startTimerVisible = false
 
     -- level generation
     init_terrain_gen(10)
@@ -197,10 +201,28 @@ function _update()
             restart()
         end
     else
+
         -- Handle character select screen
         gameStarted = initPlayers()
+
+        if votesToStart > 0 and votesToStart / playerCount >= get_votes_needed_to_start() then
+            start_timer = max(start_timer - delta_time, 0)
+            startTimerVisible = true
+
+           if start_timer <= 0 then 
+                local timeDelay = min(10, 2 + ((1-(playerCount/32)) * 10))
+                respawnTimer = timer(timeDelay)
+                gameStarted = true
+            end  
+        else
+            startTimerVisible = false
+        end
+
+        
     end
 end
+
+
 
 function _draw()
     if victory then
@@ -226,8 +248,12 @@ function _draw()
 
         else
             rectfill(camera_x, 0, camera_x + 128, camera_y + 8, camera_y)
-            print("press any button to join", camera_x, camera_y, 7)
+            print("press any button to join", camera_x + 4, camera_y, 7)
             print("\^w\^thop" .. get_player_count(), camera_x + 46,camera_y + 56)
+            if startTimerVisible then 
+                print("starting in " .. flr(start_timer), camera_x + 4, camera_y + 110, 7)
+            end
+            print("ready: " .. votesToStart .. "/" .. playerCount, camera_x + 4, camera_y + 120, 7)
         end
 
         if gameOver then
@@ -298,4 +324,14 @@ function appendLosersToWinOrder()
         -- for debug printh("Player " .. lose_order[i][1] .. " | Disabled count: " .. lose_order[i][2] .. " | TotalTimeEnabled: " .. lose_order[i][3])
     end
 
+end
+
+function get_votes_needed_to_start() 
+    if playerCount > 16 then
+        return .5
+    elseif playerCount > 8 then
+        return .85
+    else
+        return 1
+    end
 end

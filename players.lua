@@ -14,6 +14,9 @@ local maxPlayers = 32
 local maxFallVelocity = 100
 disabledPlayerCount = 0
 
+voters = {}
+votesToStart = 0
+
 -- start screen variables
 local posx = 0 -- not using this
 local posy = 0
@@ -52,50 +55,62 @@ function initPlayers()
 
         
 
-        if not (keyInput == "\32") and not (keyInput == "\13") and not (keyInput == "\112") and not players[keyInput] and currentPlayerCount <= 32 then 
-            --local sprite = sprites[playerCount % #sprites + 1]
-            local sprite = player_sprite_index[keyInput]
-            players[keyInput] = {
-                x = 8 + posx + start_position, 
-                y = 8 + posy + camera_y, 
-                width = 8, 
-                height = 8, 
-                boundsOffsetX = 0, 
-                boundsOffsetY = 0, 
-                vx = 0, 
-                vy = 0, 
-                onGround = false, 
-                bounce_force = minBounceForce, 
-                key=keyInput, 
-                sprite = sprite, 
-                disabled = false,
-                disabledCount = 0,
-                totalTimeEnabled = 0,
-                won = false
-            }
-            playerCount = playerCount + 1
+        if not (keyInput == "\32") and not (keyInput == "\13") and not (keyInput == "\112") and currentPlayerCount <= 32 then 
 
-            posx = posx + 9
-            if (posx >= 100) then
-                
-                if xOffset >= 8 then
-                    xOffset = 0
-                else
-                    xOffset = xOffset + 2
+            if not players[keyInput] then
+                start_timer = 6 -- plus one so the players see "5"
+
+                --local sprite = sprites[playerCount % #sprites + 1]
+                local sprite = player_sprite_index[keyInput]
+                players[keyInput] = {
+                    x = 8 + posx + start_position, 
+                    y = 8 + posy + camera_y, 
+                    width = 8, 
+                    height = 8, 
+                    boundsOffsetX = 0, 
+                    boundsOffsetY = 0, 
+                    vx = 0, 
+                    vy = 0, 
+                    onGround = false, 
+                    bounce_force = minBounceForce, 
+                    key=keyInput, 
+                    sprite = sprite, 
+                    disabled = false,
+                    disabledCount = 0,
+                    totalTimeEnabled = 0,
+                    won = false
+                }
+                playerCount = playerCount + 1
+
+                posx = posx + 9
+                if (posx >= 100) then
+                    
+                    if xOffset >= 8 then
+                        xOffset = 0
+                    else
+                        xOffset = xOffset + 2
+                    end
+
+                    posx = xOffset
+
+                    posy = posy + 9
                 end
-
-                posx = xOffset
-
-                posy = posy + 9
+            elseif not voters[keyInput] then
+                voters[keyInput] = keyInput
+                votesToStart += 1
             end
         end
 
+        
+        printh(start_timer)
+
         -- exit player selection and start the game
-        if keyInput == "\32" and get_player_count() > 0 then 
+        if start_timer <= 0 or (keyInput == "\32" and get_player_count() > 0) then 
             local timeDelay = min(10, 2 + ((1-(playerCount/32)) * 10))
             respawnTimer = timer(timeDelay)
             return true
         end  
+
 
         
     end
