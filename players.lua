@@ -14,8 +14,8 @@ local maxPlayers = 32
 local maxFallVelocity = 100
 disabledPlayerCount = 0
 
-voters = {}
-votesToStart = 0
+--voters = {}
+--votesToStart = 0
 
 -- start screen variables
 local posx = 0 -- not using this
