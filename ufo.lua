@@ -31,7 +31,7 @@ function UFO:new() -- there can only be one
         tracker_beam = {
             x = 0,
             y = 0,
-            width = 24,
+            width = 16,
             height = 32,
             boundsOffsetX = 4,
             boundsOffsetY = 28
@@ -91,7 +91,7 @@ function UFO:update(dt)
         or self.y < camera_y  
         or self.y > camera_y + 200 then
             --self:disable()
-            printh("ufo out of bounds!") -- to handle this, it should travel to inbounds
+            --printh("ufo out of bounds!") -- to handle this, it should travel to inbounds
         end
 
         if self.state == 1 then
@@ -129,6 +129,7 @@ function UFO:update(dt)
                     self.vy = 0
                     self.state = 3
                     self.capture_timer = 5
+                    sfx(3,1)
                 end
             end
         
@@ -204,6 +205,10 @@ function UFO:attractPlayer(player, dt)
 
 
     
+end
+
+function UFO:addToIgnoreList(player_key)
+    add(self.ignoreList, player_key)
 end
 
 function UFO:releasePlayer()

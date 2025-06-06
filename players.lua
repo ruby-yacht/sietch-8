@@ -159,6 +159,7 @@ function update_players(dt)
             for _, zombie in ipairs(zombies) do
                 if check_object_collision(player, zombie) then
                     disablePlayer(player)
+                    sfx(1)
                 end
             end
 
@@ -171,8 +172,11 @@ function update_players(dt)
                             ufo:releasePlayer()
                         end
 
+                        ufo:addToIgnoreList(player.key)
+                        sfx(2)
+
                         player.y = ufo.y-8  -- best way to guarantee this code runs once
-                        player.vy = player.bounce_force + 60
+                        player.vy = -100
                         player.vx = maxBounceRange
                         player.bounce_force = minBounceForce
                     end

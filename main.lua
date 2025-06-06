@@ -107,7 +107,7 @@ chunk_generated_callback = function(chunk)
     
     for index, ufo_spawn_position in ipairs(ufo_spawn_locations) do
         if ufo_spawn_position > chunk.x_offset_unit and ufo_spawn_position <= chunk.x_offset_unit + chunk_x_size then
-            printh(ufo_spawn_position)
+            --printh(ufo_spawn_position)
             ufos[1]:enable(ufo_spawn_position,12)
         end
     end
@@ -135,6 +135,10 @@ function _update()
             update_terrain_chunks(chunk_generated_callback)
             checkForOutOfBounds(camera_x - 16)
             gameOver = (get_disabled_count() == get_player_count())
+            if (gameOver) then
+                --sfx(4)
+                -- if sound, timeUntilRestart = 3
+            end
 
 
             -- Process key input
@@ -200,7 +204,7 @@ function _update()
         score_timer -= delta_time
 
         if score_timer <= 0 or stat(31) == "\32" and get_player_count() > 0 then 
-            printh("end")
+            --printh("end")
             restart()
         end
     else

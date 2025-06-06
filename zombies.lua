@@ -36,7 +36,7 @@ function spawn_zombie(x,y)
     end
 
     if zombie == nil then
-        printh("no more zombies available")
+        --printh("no more zombies available")
         return
     end
 
