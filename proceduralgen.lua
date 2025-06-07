@@ -315,7 +315,7 @@ function get_tile(x, y)
         end
 
         if chunk.tile == -1 then
-            printh("(" .. x .. "," .. y .. ") tile not found")
+            --printh("(" .. x .. "," .. y .. ") tile not found")
             return chunk
         end
 

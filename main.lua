@@ -16,6 +16,7 @@ local camera_speed = 15
 local ufo_spawn_locations = {}
 local victory_timer
 local score_timer
+new_player_added_timer = 0 -- set in players bounce function
 
 
 ufos = {}
@@ -38,6 +39,7 @@ function _init()
     score_timer = 15
     start_time = time()
     start_timer = 5 -- for initPlayers
+    new_player_added_timer = 0
     votesToStart = 0
     startTimerVisible = false
 
@@ -210,15 +212,15 @@ function _update()
     else
 
         -- Handle character select screen
-        gameStarted = initPlayers()
+        gameStarted = initPlayers(delta_time)
 
-        if votesToStart > 0 and votesToStart / playerCount >= get_votes_needed_to_start() then
+        if votesToStart > 0 and votesToStart >= get_votes_needed_to_start(votesToStart) then
             start_timer = max(start_timer - delta_time, 0)
             startTimerVisible = true
 
            if start_timer <= 0 then 
                 local timeDelay = min(10, 2 + ((1-(playerCount/32)) * 10))
-                respawnTimer = timer(timeDelay)
+                respawnTimer = timer(timeDelay) -- gets set when new player is added in players too
                 gameStarted = true
             end  
         else
@@ -252,15 +254,25 @@ function _draw()
         camera(camera_x, camera_y)
 
         if gameStarted then
-
-        else
-            rectfill(camera_x, 0, camera_x + 128, camera_y + 7, camera_y)
-            print("press any button to join", camera_x + 4, camera_y, 7)
-            print("\^w\^thop" .. get_player_count(), camera_x + 46,camera_y + 56)
-            if startTimerVisible then 
-                print("starting in " .. flr(start_timer), camera_x + 4, camera_y + 110, 7)
+            if new_player_added_timer > 0 then
+                print("new player added", camera_x + 4, camera_y, 7)
+                new_player_added_timer -= delta_time
             end
-            print("ready: " .. votesToStart .. "/" .. playerCount, camera_x + 4, camera_y + 120, 7)
+        else
+            rectfill(camera_x, 0, camera_x + 128, camera_y + 5, camera_y)
+            
+
+            if playerCount > 0 then
+                if startTimerVisible then 
+                    print("starting in " .. flr(start_timer), camera_x + 70, camera_y, 7)
+                end
+                print("ready: " .. votesToStart .. "/" .. playerCount, camera_x + 4, camera_y, 7)
+            else
+                print("press any button to join", camera_x + 4, camera_y, 7)
+            end
+
+            print("\^w\^thop" .. get_player_count(), camera_x + 46,camera_y + 56)
+
         end
 
         if gameOver then
@@ -333,12 +345,12 @@ function appendLosersToWinOrder()
 
 end
 
-function get_votes_needed_to_start() 
+function get_votes_needed_to_start(votes) 
     if playerCount > 16 then
-        return .5
+        return playerCount / 2
     elseif playerCount > 8 then
-        return .85
+        return playerCount - 2
     else
-        return 1
+        return playerCount - 1
     end
 end
