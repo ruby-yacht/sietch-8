@@ -1,6 +1,6 @@
 # HOP32
 Created by Sietch of Ludicrous <br>
-Game design and development: Mr. Cole Pergerson<br>
+Game design and development: Cole Pergerson<br>
 Production, outreach, and character design: James Morgan<br>
 Additional development: Shahbaz Mansahia<br>
 
