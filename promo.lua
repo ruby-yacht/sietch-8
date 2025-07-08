@@ -89,7 +89,7 @@ function _draw()
 
         print("", 0, 0, 7)
     --print("\^w\^thop32", 46, 56)
-    print("\^w\^thop32", 44, 12)
+    --print("\^w\^thop32", 44, 12)
 
     rectfill(0, 5*8, 128, 128, 1)
 
