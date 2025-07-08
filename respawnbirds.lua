@@ -1,6 +1,8 @@
 local respawnQueue = Queue.new()
 local activeBirdList = {}
-local respawnTimer = nil
+respawnTimer = nil
+--local flyPosition = camera_y + 24 need to make a global var file
+local birdSpeed = .8
 
 function init_respawn_birds()
     respawnQueue = Queue.new()
@@ -17,7 +19,7 @@ function addRespawnBird()
     local player = players[respawn.playerKey]
     local bird = respawn.bird
     local initXPos = camera_x + 128
-    local initYPos = camera_y + 16
+    local initYPos = camera_y + 24
     bird.x = initXPos
     bird.y = initYPos
     player.x = initXPos
@@ -35,7 +37,7 @@ function update_respawns()
 
     local returnToQueue = nil -- move all birds across the screen
     for _, respawn in ipairs(activeBirdList) do
-        local newPos = respawn.bird.x - 1      
+        local newPos = respawn.bird.x - birdSpeed      
         respawn.bird.x = newPos
         local p = players[respawn.playerKey];
         p.x = newPos

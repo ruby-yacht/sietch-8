@@ -42,7 +42,7 @@ function enablePlayer(player)
     disabledPlayerCount = disabledPlayerCount - 1
 end
 
-function initPlayers()
+function initPlayers(dt)
     local sprites = {33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64}
     
     if stat(30) then 
@@ -65,6 +65,7 @@ function initPlayers()
                 players[keyInput] = {
                     x = 8 + posx + start_position, 
                     y = 8 + posy + camera_y, 
+                    startPosition = 8 + posy + camera_y,
                     width = 8, 
                     height = 8, 
                     boundsOffsetX = 0, 
@@ -81,6 +82,7 @@ function initPlayers()
                     won = false
                 }
                 playerCount = playerCount + 1
+
 
                 posx = posx + 9
                 if (posx >= 100) then
@@ -99,8 +101,13 @@ function initPlayers()
                 voters[keyInput] = keyInput
                 votesToStart += 1
             end
-        end
 
+            --printh("bounce")
+            
+            players[keyInput].y = players[keyInput].startPosition - 2
+  
+
+        end
         
 
         -- exit player selection and start the game
@@ -113,6 +120,15 @@ function initPlayers()
 
         
     end
+
+    -- bounce affect 
+    for key, player in pairs(players) do
+            if player.y < player.startPosition then
+                player.y = min(player.startPosition, player.y + (20 * dt))
+            end
+    end
+
+
 
     return false
 end
@@ -266,11 +282,43 @@ end
 -- look up key associated with player and bounce them
 function bouncePlayer(key)
     local player = players[key]
-    if not (player == nil) and player.onGround and not(player.won) then
-        player.vy = player.bounce_force
-        player.vx = maxBounceRange
-        player.bounce_force = minBounceForce
-        sfx(0)
+    if not (player == nil) then
+        if player.onGround and not(player.won) then
+            player.vy = player.bounce_force
+            player.vx = maxBounceRange
+            player.bounce_force = minBounceForce
+            sfx(0)
+        end
+    else
+        local sprite = player_sprite_index[key]
+        players[key] = {
+            x = 8 + posx + start_position, 
+            y = 8 + posy + camera_y, 
+            startPosition = 8 + posy + camera_y,
+            width = 8, 
+            height = 8, 
+            boundsOffsetX = 0, 
+            boundsOffsetY = 0, 
+            vx = 0, 
+            vy = 0, 
+            onGround = false, 
+            bounce_force = minBounceForce, 
+            key=key, 
+            sprite = sprite, 
+            disabled = false,
+            disabledCount = 0,
+            totalTimeEnabled = 0,
+            won = false,
+        }
+        playerCount = playerCount + 1
+
+        local timeDelay = min(10, 2 + ((1-(playerCount/32)) * 10))
+        respawnTimer = timer(timeDelay)
+
+        disablePlayer(players[key])
+
+        new_player_added_timer = 1
+
     end
 end
 
